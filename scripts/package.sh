@@ -32,8 +32,8 @@ cat > "$app/Contents/Info.plist" <<'PLIST'
     <key>CFBundleInfoDictionaryVersion</key><string>6.0</string>
     <key>CFBundleName</key><string>基金看板</string>
     <key>CFBundlePackageType</key><string>APPL</string>
-    <key>CFBundleShortVersionString</key><string>0.3.28</string>
-    <key>CFBundleVersion</key><string>41</string>
+    <key>CFBundleShortVersionString</key><string>0.3.29</string>
+    <key>CFBundleVersion</key><string>42</string>
     <key>LSMinimumSystemVersion</key><string>13.0</string>
     <key>NSHighResolutionCapable</key><true/>
     <key>UTExportedTypeDeclarations</key>
