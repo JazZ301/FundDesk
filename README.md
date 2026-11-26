@@ -27,15 +27,22 @@
 
 ## 从源码运行
 
-macOS 需要支持 Swift 5.9 或更新版本的 Apple 开发工具。在仓库根目录运行：
+构建应用需要 Swift 5.9 或更新版本。在仓库根目录运行：
 
 ```sh
 swift run FundDesk
-swift test
 bash scripts/package.sh
 ```
 
 打包文件位于 `dist/`。开发或演示时，可把 `FUND_DESK_DATA_DIR` 指向一个单独目录。
+
+Swift 回归测试需要支持 Swift Testing 的 Swift 6 或更新版本，运行 `swift test`。如果独立安装的 Apple Command Line Tools 提示无法找到 `TestingMacros`，且本机存在对应的插件文件，可运行：
+
+```sh
+swift test -Xswiftc -load-plugin-library \
+  -Xswiftc "$(xcode-select -p)/usr/lib/swift/host/plugins/testing/libTestingMacros.dylib"
+```
+
 
 Chrome 可直接加载仓库中的 `ChromeExtension` 目录。扩展回归测试使用 Node.js 22 或更新版本：
 
