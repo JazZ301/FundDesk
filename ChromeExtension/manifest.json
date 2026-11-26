@@ -1,0 +1,41 @@
+{
+  "manifest_version": 3,
+  "name": "基金看板",
+  "version": "0.1.0",
+  "description": "在 Chrome 中查看基金、持仓与市场行情。",
+  "minimum_chrome_version": "130",
+  "permissions": [
+    "declarativeNetRequestWithHostAccess"
+  ],
+  "host_permissions": [
+    "https://fund.eastmoney.com/*",
+    "https://fundsuggest.eastmoney.com/*",
+    "https://api.fund.eastmoney.com/*",
+    "https://fundmobapi.eastmoney.com/*",
+    "https://data.eastmoney.com/*",
+    "https://push2.eastmoney.com/*",
+    "https://push2delay.eastmoney.com/*",
+    "https://push2his.eastmoney.com/*",
+    "https://stock.finance.sina.com.cn/*",
+    "https://stock2.finance.sina.com.cn/*",
+    "https://hq.sinajs.cn/*",
+    "https://qt.gtimg.cn/*",
+    "https://web.ifzq.gtimg.cn/*",
+    "https://query1.finance.yahoo.com/*"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "基金看板",
+    "default_icon": {
+      "16": "icons/funddesk-16.png",
+      "32": "icons/funddesk-32.png",
+      "48": "icons/funddesk-48.png"
+    }
+  },
+  "icons": {
+    "16": "icons/funddesk-16.png",
+    "32": "icons/funddesk-32.png",
+    "48": "icons/funddesk-48.png",
+    "128": "icons/funddesk-128.png"
+  }
+}
