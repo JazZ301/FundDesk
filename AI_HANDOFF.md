@@ -7,7 +7,15 @@
 - 品牌统一为英文名 **FundDesk**、中文名「基金看板」。Tauri `productName`、窗口标题、托盘 tooltip、Cargo 描述、前端标题、README、使用指南和打包脚本均已更新；bundle identifier 仍为 `app.funddesk.desktop`，数据目录仍为 `FundDeskDesktop`，不影响现有持仓数据。
 - 验证：`pnpm build`、`cargo check -p funddesk --features custom-protocol` 通过；macOS universal App/DMG 重建，ad-hoc 签名和镜像校验通过。DMG 为 `release/基金看板_1.0.0_universal.dmg`，SHA-256 `c2242b623a319983fac79a342df2663baacf27fa3c0697f05ecf09b31b70ab80`。
 - 安装到 `/Applications/基金看板.app` 后启动成功，窗口标题、侧栏和菜单栏均显示「基金看板」，使用正式数据目录加载 17 只自选和指数行情。旧的 `/Applications/基金看板桌面版.app` 仍保留，未自动删除。
-- 待办：Windows x64 NSIS 仍为旧「基金看板桌面版」名称，需要在 Windows 环境重新打包；GitHub 上的 `v0.3.28`、`v0.3.29` 仍是旧 Swift 版 Release，尚未删除或替换。
+- 待办：GitHub 上的 `v0.3.28`、`v0.3.29` 仍是旧 Swift 版 Release，新的双平台 `v1.0.0` Release 尚未发布。
+
+## 2026-11-28 双平台打包与 Windows 产物
+
+- GitHub Actions `build.yml` 第 7 次运行（`46098955281`）中，Windows x64 任务成功并上传 `funddesk-desktop-Windows`；macOS 任务因 GitHub 不再支持 `macos-14-arm64-us-default` 运行器而在启动前取消。
+- 工作流已将 macOS 运行器改为 `macos-15`，后续推送会重新验证通用架构构建。
+- 已从 Actions 下载 Windows 产物并解包，得到 `基金看板_1.0.0_x64-setup.exe`，大小 3,089,593 字节，SHA-256 `18544e5609d8af61151828c4125b60116e870352745b8922b77ac2887c9b5061`，已复制到 `release/` 并写入 `release/SHA256SUMS.txt`。
+- 安装器为 NSIS 自解压 PE，版本信息中 `FileDescription`、`ProductName` 均为「基金看板」，`FileVersion`、`ProductVersion` 均为 `1.0.0`。本轮未在 Windows 实机重新安装该 CI 产物，界面验证仍以 2026-11-27 的等价构建为准。
+- macOS 使用本地已验证的 `release/基金看板_1.0.0_universal.dmg`，SHA-256 `c2242b623a319983fac79a342df2663baacf27fa3c0697f05ecf09b31b70ab80`；两端产物均未配置 Developer ID 或 Authenticode 发布签名。
 
 ## 2026-11-28 美股指数分时数据源恢复
 
