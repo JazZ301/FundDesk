@@ -1,5 +1,53 @@
 # FundDesk（基金看板）交接
 
+## 发布 Skill：FundDesk `v*` 版本发布（下次直接照做）
+
+### 为什么 `v1.0.1` 这次接近 2 小时
+
+从 13:04 发现「推了 `main` 但没有 Release」到 14:58 资产补齐并验证，约 1 小时 54 分钟；
+若从 12:45「提交推送并打包」算起约 2 小时 13 分钟。功能实现本身只用了约 50 分钟，
+慢在发布链路上。时间主要花在：推送凭证、GitHub Secrets、tag 触发规则、`tauri-action@v0`
+行为不稳定、草稿 Release 重复资产、网页多文件上传，以及最后的真机更新验证。
+
+### 本次遇到的问题与处理
+
+| 问题 | 现象 | 根因 | 处理 |
+| --- | --- | --- | --- |
+| 推不上去 | HTTPS 要求 token，SSH 返回 `Permission denied (publickey)` | 本机公钥未授权给 GitHub | 用已登录 Chrome 添加 SSH key，远端改为 `git@github.com:JazZ301/FundDesk.git` |
+| 推了代码却没有 Release | `main` 更新后 Releases 无新包 | `release.yml` 只在 `v*` tag 触发；`v1.0.0` 也没有 `latest.json` | 版本升到 `1.0.1`，写发布说明，推送 `v1.0.1` tag |
+| Windows 签名失败 | `Missing comment in secret key` / 密码错误 | 仓库 Secrets 实际不存在；本机构建用的是 `~/.tauri/funddesk.key`，掩盖了问题 | 在 GitHub 仓库添加正确的 `TAURI_SIGNING_PRIVATE_KEY` 和密码 Secret |
+| 修复后重跑不触发 | 强推同一个 tag 没有新 workflow | tag 内容未变，GitHub 不会重复触发 tag push | 在 Actions 页面手动 rerun；不要依赖强推同 tag |
+| 草稿 Release 冲突 | 重复上传同名 DMG 失败 | 失败重跑复用同一个 draft Release，资产已存在 | 删除失败草稿后重跑；artifact 名加 `github.run_attempt` |
+| workflow 成功但无 Release | `tauri-action@v0` 没有真正创建 Release | `uploadUpdaterJson` / `includeUpdaterJson` 等参数与当前 `@v0` 行为不匹配 | 放弃由 action 代管 Release，改为 CI 只构建并上传 artifact，发布单独完成 |
+| 网页上传失败 | 文件被塞进 Release 正文，只有第一个成为附件 | GitHub 多文件选择器/拖放区域不可靠 | 资产先放进标准 staging 目录，用 API 逐个上传；正文只放 Markdown |
+| 临时凭据 | API 上传需要 token | 本机无 `gh` 登录 | 仅创建 30 天 `repo` scope classic PAT `funddesk-release-upload`，上传后立即在 GitHub UI 删除并确认 |
+| 最后发现 Updater 包版本错误 | Release 的 macOS `.app.tar.gz` 内 `Info.plist` 仍是 `1.0.0`，但签名声明 `1.0.1` | 构建脚本在 Tauri 生成 updater 归档后又 `codesign --force` App，归档不是最终签名后的 App | 必须把「归档内版本 = 发布版本」列为发布阻断检查；本次 Release 仍需替换该 macOS updater 资产 |
+
+### 下次执行 Skill
+
+1. **预检权限**：确认 `git remote -v` 为 SSH 且 `ssh -T git@github.com` 成功；确认 `command -v gh`，没有就准备 API 上传方案，不要在网页多文件选择器上反复试错。
+2. **版本一致性**：核对 `src-tauri/tauri.conf.json`、`src-tauri/Cargo.toml`、`package.json`、`release-notes/vX.Y.Z.md`；只推送基于修复后 `main` 的新 tag。
+3. **Secrets 先行**：发布前确认 `TAURI_SIGNING_PRIVATE_KEY`、`TAURI_SIGNING_PRIVATE_KEY_PASSWORD` 存在；密码为空时显式传空字符串，不要依赖缺失 Secret 的默认值。
+4. **构建产物固定为 7 件**：macOS DMG、macOS updater `.app.tar.gz`、`.sig`、Windows `.exe`、`.sig`、`latest.json`、`SHA256SUMS.txt`。少任何一件不得发布。
+5. **Updater 包阻断检查**：从 `.app.tar.gz` 解出 `基金看板.app/Contents/Info.plist`，确认 `CFBundleShortVersionString` 等于发布版本；若脚本在归档后重新签名，必须重新生成归档和签名。
+6. **发布顺序**：先推 `main`，再推 `vX.Y.Z`；修复后不要强推同 tag 期待触发，直接在 Actions rerun；已有失败草稿先删除再重跑。
+7. **上传**：优先 `gh release create/upload`；没有 `gh` 时用短期 PAT 调 API 逐文件上传。绝不在 Release 正文粘贴/拖入二进制文件。
+8. **公开验证**：`releases/latest/download/latest.json` 返回目标版本和三个平台键；7 个资产 URL 全部 HTTP 200；下载后 `shasum -a 256 -c SHA256SUMS.txt` 通过；DMG 内 App 版本正确。
+9. **真机验证**：从 Release 安装 DMG 到 `/Applications`，界面「关于」显示新版本；再从上一版本走一次手动检查 → 下载 → 验签 → 安装 → 重启，重启后版本必须等于新版本。
+10. **收尾**：删除临时 PAT，清理 Release 正文错误链接，提交推送工作流/文档变更，更新 `AI_HANDOFF.md`。旧 Release 不删除；坏版本只通过更高补丁版本修复。
+
+### 正常耗时目标
+
+权限和 Secrets 已就绪、工作流已稳定时，一次发布应在 **20–30 分钟**内完成：构建 5–10 分钟，
+上传与清单 5 分钟，公开下载和真机验收 10–15 分钟。超过 45 分钟时应停止重试，先回到上面
+的预检清单定位阻断点。
+
+### 本次遗留风险
+
+- Release 的 macOS updater `.app.tar.gz` 内版本仍为 `1.0.0`，不能作为从 `1.0.0` 自动升级到 `1.0.1` 的有效更新包；DMG 安装版已是 `1.0.1`。
+- Windows CI 本次仍有失败，Release 中的 Windows 安装包来自此前成功产物并重新签名；下次应修复 Windows job 稳定性。
+- macOS 仍为 ad-hoc 签名、未公证；Windows 未做 Authenticode 签名。
+
 ## 2026-11-28 检查更新功能接入
 
 - 接入 Tauri updater/process：设置页左侧新增独立的「关于」与「免责声明」入口；「关于」页显示当前版本、手动检查、更新说明、下载进度、安装完成和重启按钮。无更新清单时显示「暂时没有可用的更新清单」，不误报失败。
