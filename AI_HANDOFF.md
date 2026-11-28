@@ -6,6 +6,9 @@
 - 保留直接录入份额和单位成本的方式。TSV 导入默认补空白，显式覆盖也只处理文件已填字段；旧持仓数据无需迁移。
 - 休市提示覆盖周末和 2026 年 A 股节假日。后续年份需补充节假日日历。现有轮询按星期和时段判断，工作日节假日仍可能请求盘中估值。
 - 发布由 tag 触发。新版使用固定的 `latest-cn.json`，同时发布旧客户端使用的 `latest-cn-v1.0.1.json` 兼容清单和 GitHub 官方 `latest.json`。
+- `v1.0.2` 标签指向 `17acac1`。工作区测试、前端生产构建、本地 macOS 双架构 DMG 校验及 updater 归档版本检查通过。
+- GitHub Actions [首次发布运行](https://github.com/JazZ301/FundDesk/actions/runs/46132833693) 中，内核测试通过，两个打包任务失败。macOS 日志显示 updater 签名秘密无法解码（`Missing encoded key in secret key`）。恢复仓库的现有签名 Secret 后，重跑同一运行的所有任务，再校验公开资产。验证时保留旧客户端用于真实升级测试。
+
 
 ## 2026-11-28 看板估值休市提示
 
