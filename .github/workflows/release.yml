@@ -121,12 +121,19 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD || '' }}
         with:
-          tagName: v${{ needs.meta.outputs.version }}
-          releaseName: 基金看板 v${{ needs.meta.outputs.version }}
-          releaseBody: ${{ needs.meta.outputs.body }}
-          releaseDraft: true
-          prerelease: false
-          includeUpdaterJson: true
-          updaterJsonPreferNsis: true
-          updaterJsonKeepUniversal: true
           args: --target ${{ matrix.target }} ${{ env.TAURI_EXTRA_ARGS }}
+      - name: Upload release bundles
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-${{ matrix.artifact }}
+          path: |
+            target/**/bundle/dmg/*.dmg
+            target/**/bundle/macos/*.app.tar.gz
+            target/**/bundle/macos/*.app.tar.gz.sig
+            target/**/bundle/nsis/*.exe
+            target/**/bundle/nsis/*.exe.sig
+            target/**/bundle/msi/*.msi
+            target/**/bundle/msi/*.msi.sig
+            target/**/bundle/msi/*.msi.zip
+            target/**/bundle/msi/*.msi.zip.sig
+          if-no-files-found: error
