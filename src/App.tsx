@@ -19,6 +19,8 @@ import FuturesView from "./Futures";
 import HoldingsDataImport from "./HoldingsDataImport";
 import DataSourceDialog from "./DataSource";
 import UpdatePanel from "./UpdatePanel";
+import alipayQr from "./assets/support-alipay.jpg";
+import wechatQr from "./assets/support-wechat.jpg";
 
 type Section = "all" | "holding" | "macd" | "red" | "market" | "futures" | "settings";
 type FundGroup = "macd" | "red";
@@ -51,7 +53,8 @@ const ICONS = {
   theme: "M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM12 2v20",
   timer: "M12 22a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 9v5l3 2M9 2h6",
   menuBar: "M3 4h18v16H3zM7 8h4v8H7zM14 8h3M14 12h3M14 16h3",
-  shield: "M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6l-8-3zM12 8v5M12 16h.01"
+  shield: "M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6l-8-3zM12 8v5M12 16h.01",
+  heart: "M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"
 };
 
 function Icon({ name }: { name: keyof typeof ICONS }) {
@@ -645,7 +648,7 @@ function FundTable({
 }
 
 const SETTINGS_TABS: {
-  id: "appearance" | "refresh" | "menuBar" | "sources" | "transfer" | "about" | "disclaimer";
+  id: "appearance" | "refresh" | "menuBar" | "sources" | "transfer" | "support" | "about" | "disclaimer";
   label: string;
   hint: string;
   icon: keyof typeof ICONS;
@@ -655,6 +658,7 @@ const SETTINGS_TABS: {
   { id: "menuBar", label: "菜单栏", hint: "上证与收益", icon: "menuBar" },
   { id: "sources", label: "数据源", hint: "接口配置", icon: "wifi" },
   { id: "transfer", label: "批量导入持仓", hint: "AI 模板与文本", icon: "transfer" },
+  { id: "support", label: "支持开发", hint: "赞赏与鼓励", icon: "heart" },
   { id: "about", label: "关于", hint: "版本与更新", icon: "info" },
   { id: "disclaimer", label: "免责声明", hint: "使用风险", icon: "shield" }
 ];
@@ -681,8 +685,8 @@ function SourceConfigHelp() {
 
   return (
     <section className="settings-card source-config-help">
-      <h3>加微信入群，获取接口配置</h3>
-      <p>在微信中搜索并添加下方微信号。好友申请通过后，我们会邀请你加入微信群，入群后即可获取接口配置。</p>
+      <h3>加微信群，交流使用反馈</h3>
+      <p>遇到问题或有功能建议，欢迎添加下方微信。好友申请通过后会邀请你进群，方便反馈问题、交流使用体验，也能及时了解版本更新。</p>
       <div className="source-config-copy">
         <button
           className="primary"
@@ -702,12 +706,14 @@ function SettingsDialog({
   board,
   sources,
   onOpenSources,
+  onRestoreSources,
   onChange,
   onClose
 }: {
   board: BoardView;
   sources: DataSourceStatus;
   onOpenSources: () => void;
+  onRestoreSources: () => void;
   onChange: (view: BoardView) => void;
   onClose: () => void;
 }) {
@@ -881,11 +887,16 @@ function SettingsDialog({
                     <h3><span className="settings-icon"><Icon name="wifi" /></span>数据源</h3>
                     <p>
                       {sources.configured
-                        ? `已配置：${sources.label || "自定义配置"}`
-                        : "尚未配置。行情、净值和估算不会加载，需要先导入数据源地址。"}
+                        ? `当前配置：${sources.label || "自定义配置"}。软件已内置可用接口，可按需替换。`
+                        : sources.defaultAvailable
+                          ? "尚未配置。可以一键恢复安装包内置的接口，或导入自己的配置。"
+                          : "尚未配置。行情、净值和估算不会加载，需要先导入数据源地址。"}
                     </p>
                     <div className="section-actions">
                       <button className="ghost small" onClick={onOpenSources}>配置数据源</button>
+                      {!sources.configured && sources.defaultAvailable && (
+                        <button className="ghost small" onClick={onRestoreSources}>恢复内置默认</button>
+                      )}
                       {!sources.configured && <span className="hint">缺少 {sources.missing.length} 项地址</span>}
                     </div>
                   </section>
@@ -896,6 +907,36 @@ function SettingsDialog({
                 <section className="settings-card" aria-labelledby="holdings-import-title">
                   <h3 id="holdings-import-title"><span className="settings-icon"><Icon name="transfer" /></span>批量导入持仓</h3>
                   <HoldingsDataImport board={board} onChange={onChange} />
+                </section>
+              )}
+              {tab === "support" && (
+                <section className="settings-card settings-support">
+                  <h3><span className="settings-icon"><Icon name="heart" /></span>支持开发</h3>
+                  <p>
+                    基金看板由个人利用业余时间开发和维护，所有功能免费开放。如果它帮你节省了时间，
+                    欢迎扫码请我喝杯咖啡，金额随意。赞赏完全自愿，不解锁任何功能，也不影响后续更新。
+                  </p>
+                  <div className="support-qr-grid">
+                    <figure className="support-qr-card">
+                      <figcaption>
+                        <span className="support-pay-badge alipay">支付宝</span>
+                        <strong>打开支付宝扫一扫</strong>
+                      </figcaption>
+                      <img src={alipayQr} alt="支付宝赞赏码" />
+                      <small>收款人：ju(**强)</small>
+                    </figure>
+                    <figure className="support-qr-card">
+                      <figcaption>
+                        <span className="support-pay-badge wechat">微信</span>
+                        <strong>打开微信扫一扫</strong>
+                      </figcaption>
+                      <img src={wechatQr} alt="微信赞赏码" />
+                      <small>收款人：Ju ® (**强)</small>
+                    </figure>
+                  </div>
+                  <p className="support-note">
+                    二维码仅用于赞赏，不会收集你的支付信息。支付前请确认收款人名称，谨防替换。
+                  </p>
                 </section>
               )}
               {tab === "about" && (
@@ -1033,6 +1074,19 @@ export default function App() {
       setIndicesRefreshing(false);
     }
   }, [updateIndices]);
+
+  const restoreDefaultSources = useCallback(async () => {
+    try {
+      const next = await api.resetDataSources();
+      setSourcesStatus(next);
+      setNotice("已恢复内置默认数据源");
+      setError("");
+      void refresh();
+      void refreshIndices();
+    } catch (reason) {
+      setError(String(reason));
+    }
+  }, [refresh, refreshIndices]);
 
   useEffect(() => {
     api
@@ -1207,7 +1261,14 @@ export default function App() {
                 ? `数据源配置无法读取：${sourcesStatus.error}`
                 : "尚未配置数据源，行情、净值和估算不会加载。"}
             </span>
-            <button className="ghost small" onClick={() => setDataSourceOpen(true)}>配置数据源</button>
+            <div className="data-source-banner-actions">
+              {sourcesStatus.defaultAvailable && (
+                <button className="ghost small" onClick={() => void restoreDefaultSources()}>
+                  恢复内置默认
+                </button>
+              )}
+              <button className="ghost small" onClick={() => setDataSourceOpen(true)}>配置数据源</button>
+            </div>
           </div>
         )}
         {showBoard && (
@@ -1243,7 +1304,7 @@ export default function App() {
               onError={setError}
               group={section === "macd" ? "macd" : section === "red" ? "red" : null}
               onRemoveFund={(row) => {
-                if (!window.confirm(`将从自选中移除 ${row.name} 及本地持仓和流水。`)) return;
+                if (!window.confirm(`将从自选中移除 ${row.name} 及本地持仓。`)) return;
                 api.removeFund(row.code).then(updateBoard).catch((reason) => setError(String(reason)));
               }}
               onSetGroups={(row, groups) => {
@@ -1313,6 +1374,7 @@ export default function App() {
             setSettingsOpen(false);
             setDataSourceOpen(true);
           }}
+          onRestoreSources={() => void restoreDefaultSources()}
           onChange={updateBoard}
           onClose={() => setSettingsOpen(false)}
         />

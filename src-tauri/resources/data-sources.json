@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "label": "内置默认配置",
+  "eastmoney": {
+    "fund": "https://fund.eastmoney.com",
+    "fundApi": "https://api.fund.eastmoney.com",
+    "fundMobile": "https://fundmobapi.eastmoney.com",
+    "fundSuggest": "https://fundsuggest.eastmoney.com",
+    "fundF10": "https://fundf10.eastmoney.com",
+    "data": "https://data.eastmoney.com",
+    "push2": "https://push2.eastmoney.com",
+    "push2his": "https://push2his.eastmoney.com",
+    "push2delay": "https://push2delay.eastmoney.com"
+  },
+  "sina": {
+    "finance": "https://finance.sina.com.cn",
+    "hq": "https://hq.sinajs.cn",
+    "stock": "https://stock.finance.sina.com.cn",
+    "stock2": "https://stock2.finance.sina.com.cn",
+    "vip": "https://vip.stock.finance.sina.com.cn"
+  },
+  "tencent": {
+    "qt": "https://qt.gtimg.cn",
+    "ifzq": "https://web.ifzq.gtimg.cn",
+    "portal": "https://gu.qq.com"
+  },
+  "yahoo": {
+    "query1": "https://query1.finance.yahoo.com"
+  },
+  "http": {
+    "userAgent": "FundDeskDesktop/1.0"
+  }
+}

@@ -1,6 +1,6 @@
 use crate::backup::{BackupError, BoardBackup};
 use crate::csv;
-use crate::model::{Fund, FundObservation, Holding, PositionRecord};
+use crate::model::{Fund, FundObservation, Holding};
 use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
@@ -18,7 +18,6 @@ pub struct ImportPreview {
     pub holdings: Vec<Holding>,
     pub duplicates: usize,
     pub invalid: usize,
-    pub journals: HashMap<String, Vec<PositionRecord>>,
     pub observations: HashMap<String, FundObservation>,
 }
 
@@ -30,11 +29,9 @@ impl ImportPreview {
             .map(|fund| (fund.code.clone(), fund))
             .collect::<HashMap<_, _>>();
         let mut invalid = 0;
-        let mut journals = HashMap::new();
         let mut observations = HashMap::new();
 
         let incoming = if let Some(backup) = BoardBackup::recognized(data)? {
-            journals = backup.board.journals.clone().unwrap_or_default();
             observations = backup.board.observations.clone().unwrap_or_default();
             backup.board.holdings
         } else {
@@ -65,14 +62,12 @@ impl ImportPreview {
             .iter()
             .map(|holding| holding.id().to_string())
             .collect::<HashSet<_>>();
-        journals.retain(|code, _| imported.contains(code));
         observations.retain(|code, _| imported.contains(code));
 
         Ok(Self {
             holdings,
             duplicates,
             invalid,
-            journals,
             observations,
         })
     }

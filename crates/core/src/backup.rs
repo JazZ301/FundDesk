@@ -41,8 +41,6 @@ struct Legacy {
     version: i32,
     holdings: Vec<Holding>,
     #[serde(default)]
-    journals: Option<HashMap<String, Vec<crate::model::PositionRecord>>>,
-    #[serde(default)]
     observations: Option<HashMap<String, crate::model::FundObservation>>,
 }
 
@@ -92,7 +90,6 @@ impl BoardBackup {
                 let legacy: Legacy = serde_json::from_slice(data)?;
                 let board = Board {
                     holdings: legacy.holdings,
-                    journals: legacy.journals,
                     observations: legacy.observations,
                     ..Board::default()
                 };
@@ -134,7 +131,6 @@ impl BoardBackup {
             .map(|holding| holding.id().to_string())
             .collect::<HashSet<_>>();
         restored.snapshots.retain(|code, _| codes.contains(code));
-        restored.journals = self.board.journals.clone();
         restored.observations = self.board.observations.clone();
         restored
     }
@@ -218,7 +214,7 @@ pub fn restore_point_for(path: &Path) -> Result<Board, BackupError> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::model::{Fund, FundGroup, PositionAction, PositionRecord, Snapshot};
+    use crate::model::{Fund, FundGroup, Snapshot};
     use rust_decimal::Decimal;
     use std::str::FromStr;
 
@@ -239,19 +235,6 @@ mod tests {
         board
             .snapshots
             .insert("007339".to_string(), Snapshot::default());
-        board.journals = Some(HashMap::from([(
-            "007339".to_string(),
-            vec![PositionRecord {
-                id: "0F0E0D0C-0B0A-4908-8706-050403020100".to_string(),
-                action: PositionAction::Buy,
-                day: "2026-11-20".to_string(),
-                shares: Some(Decimal::from_str("10000").unwrap()),
-                price: Some(Decimal::from_str("1.5").unwrap()),
-                fee: Decimal::ZERO,
-                cash: Decimal::from_str("-15000").unwrap(),
-                realized: None,
-            }],
-        )]));
         board
     }
 

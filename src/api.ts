@@ -81,6 +81,7 @@ export type DataSourceStatus = {
   label: string;
   missing: string[];
   error?: string;
+  defaultAvailable: boolean;
 };
 
 export type IndexQuote = {
@@ -332,17 +333,6 @@ export type FuturesIntraday = {
   averages?: PlotPoint[];
 };
 
-export type JournalRecord = {
-  id: string;
-  action: string;
-  day: string;
-  shares?: number;
-  price?: number;
-  fee: number;
-  cash: number;
-  realized?: number;
-};
-
 type HoldingsImportResult = {
   board: BoardView;
   report: { added: number; updated: number; unchanged: number };
@@ -353,6 +343,7 @@ export const api = {
   dataSourcesText: () => invoke<string>("data_sources_text"),
   saveDataSources: (text: string) => invoke<DataSourceStatus>("save_data_sources", { text }),
   clearDataSources: () => invoke<DataSourceStatus>("clear_data_sources"),
+  resetDataSources: () => invoke<DataSourceStatus>("reset_data_sources"),
   readDataSourceFile: () => invoke<string | null>("read_data_source_file"),
   readHoldingsImportFile: () => invoke<string | null>("read_holdings_import_file"),
   saveHoldingsImportTemplate: () => invoke<boolean>("save_holdings_import_template"),
@@ -387,30 +378,7 @@ export const api = {
     invoke<FuturesQuote[]>("add_futures", { symbol, title }),
   removeFutures: (symbol: string) => invoke<FuturesQuote[]>("remove_futures", { symbol }),
   futuresIntraday: (symbol: string) => invoke<FuturesIntraday>("futures_intraday", { symbol }),
-  futuresDetail: (symbol: string) => invoke<FuturesDetail>("futures_detail", { symbol }),
-  journalRecords: (code: string) => invoke<JournalRecord[]>("journal_records", { code }),
-  addJournal: (payload: {
-    code: string;
-    action: string;
-    day: string;
-    shares?: number;
-    price?: number;
-    fee: number;
-    distribution?: number;
-  }) => invoke<BoardView>("add_journal", { payload }),
-  replaceJournal: (
-    id: string,
-    payload: {
-      code: string;
-      action: string;
-      day: string;
-      shares?: number;
-      price?: number;
-      fee: number;
-      distribution?: number;
-    }
-  ) => invoke<BoardView>("replace_journal", { id, payload }),
-  deleteJournal: (code: string, id: string) => invoke<BoardView>("delete_journal", { code, id })
+  futuresDetail: (symbol: string) => invoke<FuturesDetail>("futures_detail", { symbol })
 };
 
 export const SWIFT_EPOCH = 978_307_200;
@@ -437,8 +405,7 @@ export const DETAIL_TITLES: Record<string, string> = {
   holdings: "持仓明细",
   profile: "基金概况",
   observation: "观察数据",
-  managers: "基金经理",
-  journal: "持仓流水"
+  managers: "基金经理"
 };
 
 export const FUTURES_TITLES: Record<string, string> = {

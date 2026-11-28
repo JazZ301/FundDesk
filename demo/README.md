@@ -7,7 +7,7 @@
 ```sh
 mkdir -p .demo-data
 cp demo/board.demo.json .demo-data/board.json
-cp demo/data-sources.example.json .demo-data/data-sources.json
+cp src-tauri/resources/data-sources.json .demo-data/data-sources.json
 FUND_DESK_DATA_DIR="$PWD/.demo-data" pnpm tauri dev
 ```
 
@@ -16,9 +16,9 @@ FUND_DESK_DATA_DIR="$PWD/.demo-data" pnpm tauri dev
 ```sh
 mkdir -p .demo-data
 cp demo/board.demo.json .demo-data/board.json
-cp demo/data-sources.example.json .demo-data/data-sources.json
+cp src-tauri/resources/data-sources.json .demo-data/data-sources.json
 FUND_DESK_DATA_DIR="$PWD/.demo-data" \
   "/Applications/基金看板.app/Contents/MacOS/funddesk"
 ```
 
-份额和成本均为整齐的演示数字。`data-sources.example.json` 只包含字段结构，所有地址为空；把可信数据源提供的地址填入对应字段后，应用才会加载行情。不要把带有登录凭据或未知代理的配置提交到仓库。
+份额和成本均为整齐的演示数字。`src-tauri/resources/data-sources.json` 是安装包内置的默认接口配置，全新数据目录也会自动生成同样的文件。不要把带有登录凭据或未知代理的配置提交到仓库。

@@ -11,7 +11,6 @@ import {
   FundDetail as FundDetailData,
   FundDisclosure,
   FundRow,
-  JournalRecord,
   Nav,
   swiftDate
 } from "./api";
@@ -85,12 +84,6 @@ function stockQuoteSymbol(holding: { code: string; stockMarket?: string }): stri
   return `${prefix}${code}`;
 }
 
-function actionKey(action: string): string {
-  if (action.includes("赎回") || action.toLowerCase() === "sell") return "sell";
-  if (action.includes("分红") || action.toLowerCase() === "distribution") return "distribution";
-  return "buy";
-}
-
 function RefreshableTitle({
   title,
   detail,
@@ -118,15 +111,6 @@ function RefreshableTitle({
   );
 }
 
-function todayText(): string {
-  return new Intl.DateTimeFormat("sv-SE", {
-    timeZone: "Asia/Shanghai",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit"
-  }).format(new Date());
-}
-
 function PositionStat({
   label,
   value,
@@ -142,156 +126,6 @@ function PositionStat({
     <div className="position-stat">
       <span>{label}</span>
       <strong className={color}>{value}{suffix && <em>{suffix}</em>}</strong>
-    </div>
-  );
-}
-
-function JournalDialog({
-  code,
-  records,
-  onClose,
-  onChanged
-}: {
-  code: string;
-  records: JournalRecord[];
-  onClose: () => void;
-  onChanged: () => void;
-}) {
-  const [action, setAction] = useState("buy");
-  const [day, setDay] = useState(todayText());
-  const [shares, setShares] = useState("");
-  const [price, setPrice] = useState("");
-  const [fee, setFee] = useState("");
-  const [distribution, setDistribution] = useState("");
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [error, setError] = useState("");
-  const [busy, setBusy] = useState(false);
-  const [menuFor, setMenuFor] = useState<string | null>(null);
-
-  const valid =
-    action === "distribution"
-      ? Number(distribution) > 0
-      : Number(shares) > 0 && Number(price) > 0 && (fee === "" || Number(fee) >= 0);
-
-  const reset = () => {
-    setEditingId(null);
-    setShares("");
-    setPrice("");
-    setFee("");
-    setDistribution("");
-    setError("");
-  };
-
-  const beginEdit = (record: JournalRecord) => {
-    setEditingId(record.id);
-    setAction(actionKey(record.action));
-    setDay(record.day.slice(0, 10));
-    setShares(record.shares != null ? String(record.shares) : "");
-    setPrice(record.price != null ? String(record.price) : "");
-    setFee(record.fee ? String(record.fee) : "");
-    setDistribution(actionKey(record.action) === "distribution" ? String(Math.abs(record.cash)) : "");
-    setError("");
-    setMenuFor(null);
-  };
-
-  const save = async () => {
-    if (!valid) return;
-    setBusy(true);
-    try {
-      const payload = {
-        code,
-        action,
-        day,
-        shares: action === "distribution" ? undefined : Number(shares),
-        price: action === "distribution" ? undefined : Number(price),
-        fee: action === "distribution" ? 0 : Number(fee || 0),
-        distribution: action === "distribution" ? Number(distribution) : undefined
-      };
-      if (editingId) await api.replaceJournal(editingId, payload);
-      else await api.addJournal(payload);
-      reset();
-      onChanged();
-    } catch (reason) {
-      setError(String(reason));
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const remove = async (record: JournalRecord) => {
-    if (!window.confirm(`将删除 ${record.day} 的${record.action}记录，并按剩余流水重新计算持仓。`)) return;
-    setBusy(true);
-    try {
-      await api.deleteJournal(code, record.id);
-      if (editingId === record.id) reset();
-      setMenuFor(null);
-      onChanged();
-    } catch (reason) {
-      setError(String(reason));
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  return (
-    <div className="modal-backdrop journal-backdrop" onClick={onClose}>
-      <div className="modal journal-modal" onClick={(event) => event.stopPropagation()}>
-        <header className="sheet-head">
-          <h2>{editingId ? "编辑流水" : "持仓流水"}</h2>
-          <button className="sheet-done" onClick={onClose}>完成</button>
-        </header>
-        <div className="journal-editor">
-          <div className="journal-fields">
-            <select value={action} onChange={(event) => setAction(event.target.value)}>
-              <option value="buy">申购 / 加仓</option>
-              <option value="sell">赎回 / 减仓</option>
-              <option value="distribution">现金分红</option>
-            </select>
-            <input type="date" value={day} max={todayText()} onChange={(event) => setDay(event.target.value)} />
-            {editingId && <button className="ghost" onClick={reset}>取消修改</button>}
-          </div>
-          <div className="journal-fields">
-            {action === "distribution" ? (
-              <input placeholder="到账金额" value={distribution} onChange={(event) => setDistribution(event.target.value)} />
-            ) : (
-              <>
-                <input placeholder="确认份额" value={shares} onChange={(event) => setShares(event.target.value)} />
-                <input placeholder="成交净值" value={price} onChange={(event) => setPrice(event.target.value)} />
-                <input placeholder="手续费（可空）" value={fee} onChange={(event) => setFee(event.target.value)} />
-              </>
-            )}
-            <button className="primary" disabled={busy || !valid} onClick={() => void save()}>
-              {editingId ? "保存修改" : "保存记录"}
-            </button>
-          </div>
-          <p className="hint">
-            填写平台已确认的份额和净值。修改或删除会按剩余流水重新计算持仓；加仓按加权平均更新成本，
-            减仓按当前单位成本计算已实现收益。
-          </p>
-          {error && <p className="error">{error}</p>}
-        </div>
-        <div className="journal-records">
-          {records.length === 0 && <p className="empty">还没有流水记录。</p>}
-          {[...records].reverse().map((record) => (
-            <div className="journal-row" key={record.id}>
-              <span className="journal-day">{record.day}</span>
-              <span>{record.action}</span>
-              {record.shares != null && <span>{formatMoney(record.shares, 2)} 份</span>}
-              <span className="num">{signedMoney(record.cash)}</span>
-              {record.realized != null && <span className="muted num">已实现 {signedMoney(record.realized)}</span>}
-              <div className="journal-menu">
-                <button className="icon small" onClick={() => setMenuFor(menuFor === record.id ? null : record.id)}>⋯</button>
-                {menuFor === record.id && (
-                  <div className="menu-popover">
-                    <button onClick={() => beginEdit(record)}>编辑记录</button>
-                    <button className="danger-text" onClick={() => void remove(record)}>删除记录</button>
-                  </div>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
     </div>
   );
 }
@@ -322,8 +156,6 @@ export default function FundDetail({
   const [shares, setShares] = useState("");
   const [cost, setCost] = useState("");
   const [saved, setSaved] = useState(false);
-  const [journal, setJournal] = useState<JournalRecord[]>([]);
-  const [showJournal, setShowJournal] = useState(false);
   const [busy, setBusy] = useState(false);
   const [dragTab, setDragTab] = useState<string | null>(null);
   const [dragOverTab, setDragOverTab] = useState<string | null>(null);
@@ -357,7 +189,6 @@ export default function FundDetail({
       .catch((reason) => {
         if (!cancelled) setError(String(reason));
       });
-    api.journalRecords(code).then(setJournal).catch(() => setJournal([]));
     return () => {
       cancelled = true;
     };
@@ -553,12 +384,6 @@ export default function FundDetail({
     } finally {
       setBusy(false);
     }
-  };
-
-  const refreshJournal = async () => {
-    setJournal(await api.journalRecords(code));
-    const view = await api.bootstrap();
-    onChanged(view.board);
   };
 
   const openTarget = async () => {
@@ -984,20 +809,17 @@ export default function FundDetail({
           <header className="position-head">
             <div>
               <h3>本地持仓</h3>
-              <p className="hint">只保存在这台 {platformName}，可随时用持仓流水校正</p>
+              <p className="hint">只保存在这台 {platformName}，可随时修改份额和单位成本</p>
             </div>
             <div className="position-actions">
               {saved && <span className="saved-note">已保存</span>}
               {!editing && (
-                <>
-                  <button className="ghost small" onClick={() => setShowJournal(true)}>▤ 持仓流水</button>
-                  <button className="primary small" onClick={() => {
-                    setShares(row?.shares != null ? String(row.shares) : "");
-                    setCost(row?.cost != null ? String(row.cost) : "");
-                    setEditing(true);
-                    setSaved(false);
-                  }}>✎ 编辑持仓</button>
-                </>
+                <button className="primary small" onClick={() => {
+                  setShares(row?.shares != null ? String(row.shares) : "");
+                  setCost(row?.cost != null ? String(row.cost) : "");
+                  setEditing(true);
+                  setSaved(false);
+                }}>✎ 编辑持仓</button>
               )}
             </div>
           </header>
@@ -1066,14 +888,6 @@ export default function FundDetail({
           )}
         </section>
 
-        {showJournal && (
-          <JournalDialog
-            code={code}
-            records={journal}
-            onClose={() => setShowJournal(false)}
-            onChanged={() => void refreshJournal()}
-          />
-        )}
     </div>
   );
 }

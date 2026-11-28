@@ -443,6 +443,13 @@ select {
   gap: 12px;
 }
 
+.data-source-banner-actions {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-shrink: 0;
+}
+
 .banner.hint {
   margin: 0;
   color: var(--muted);
@@ -1465,6 +1472,17 @@ select {
   overflow: hidden;
 }
 
+.sheet-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.sheet-head h2 {
+  margin: 0;
+}
+
 .add-modal {
   width: min(548px, 94vw);
   height: 392px;
@@ -1905,21 +1923,6 @@ select {
 
 .inline-form input {
   width: 92px;
-}
-
-.journal-form {
-  display: flex;
-  gap: 6px;
-  align-items: center;
-  flex-wrap: wrap;
-  border: 1px solid var(--line);
-  border-radius: 9px;
-  padding: 8px;
-  background: var(--panel);
-}
-
-.journal-form input {
-  width: 104px;
 }
 
 .settings {
@@ -2983,119 +2986,6 @@ select {
   gap: 12px;
 }
 
-.journal-backdrop {
-  z-index: 60;
-}
-
-.journal-modal {
-  width: min(620px, 94vw);
-  height: 395px;
-  padding: 17px;
-  display: flex;
-  flex-direction: column;
-  gap: 9px;
-  border-radius: 12px;
-  background: linear-gradient(145deg, var(--detail-canvas-top, #f7f8fd), var(--detail-canvas-bottom, #eff3fa));
-}
-
-.sheet-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.sheet-head h2 {
-  margin: 0;
-  font-size: 17px;
-}
-
-.journal-editor {
-  border: 1px solid var(--line);
-  border-radius: 9px;
-  background: var(--panel);
-  padding: 9px 10px;
-}
-
-.journal-fields {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  flex-wrap: wrap;
-}
-
-.journal-fields + .journal-fields {
-  margin-top: 7px;
-}
-
-.journal-fields select {
-  width: 128px;
-}
-
-.journal-fields input {
-  width: 92px;
-}
-
-.journal-fields input[type="date"] {
-  width: 132px;
-}
-
-.journal-editor .hint {
-  margin-top: 6px;
-}
-
-.journal-records {
-  flex: 1;
-  min-height: 0;
-  overflow: auto;
-  border: 1px solid var(--line);
-  border-radius: 9px;
-  background: var(--panel);
-  padding: 4px 10px;
-}
-
-.journal-row {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  min-height: 32px;
-  border-bottom: 1px solid var(--line-soft);
-  font-size: 11px;
-  font-variant-numeric: tabular-nums;
-}
-
-.journal-day {
-  width: 82px;
-  color: var(--muted);
-}
-
-.journal-row > span:nth-child(2) {
-  width: 72px;
-}
-
-.journal-row > span:nth-child(3) {
-  width: 105px;
-}
-
-.journal-row > .num {
-  margin-left: auto;
-}
-
-.journal-menu {
-  position: relative;
-}
-
-.journal-menu button.icon.small {
-  width: 24px;
-  height: 24px;
-  font-size: 15px;
-  color: var(--muted);
-  border: 0;
-  background: transparent;
-  cursor: pointer;
-}
-
 .menu-popover {
   position: absolute;
   right: 0;
@@ -3519,6 +3409,87 @@ select {
 .settings-disclaimer p {
   margin-top: 8px;
   line-height: 1.7;
+}
+
+.settings-card.settings-support {
+  background:
+    linear-gradient(155deg, color-mix(in srgb, var(--brand) 7%, var(--panel)), var(--panel) 62%);
+}
+
+.support-qr-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.support-qr-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  margin: 0;
+  padding: 10px 9px 9px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--panel-raised);
+}
+
+.support-qr-card figcaption {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 10.5px;
+}
+
+.support-qr-card figcaption strong {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.support-pay-badge {
+  flex: none;
+  padding: 1px 7px;
+  border-radius: 999px;
+  color: #fff;
+  font-size: 9.5px;
+  font-weight: 650;
+  line-height: 1.6;
+}
+
+.support-pay-badge.alipay {
+  background: #1677ff;
+}
+
+.support-pay-badge.wechat {
+  background: #07c160;
+}
+
+.support-qr-card img {
+  display: block;
+  width: 100%;
+  max-width: 172px;
+  aspect-ratio: 1;
+  object-fit: contain;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 0 0 1px var(--line-soft);
+}
+
+.support-qr-card small {
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.4;
+  text-align: center;
+}
+
+.support-note {
+  margin-top: 10px !important;
+  color: var(--muted);
+  font-size: 10px !important;
+  line-height: 1.55 !important;
 }
 
 .update-icon {

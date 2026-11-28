@@ -24,7 +24,6 @@ pub struct RoundTripReport {
     pub bytes_out: usize,
     pub holdings: usize,
     pub snapshots: usize,
-    pub journals: usize,
     pub observations: usize,
     pub notes: Vec<String>,
 }
@@ -193,7 +192,6 @@ pub fn roundtrip_file(path: &Path) -> Result<RoundTripReport, String> {
         bytes_out: encoded.len(),
         holdings: board.holdings.len(),
         snapshots: board.snapshots.len(),
-        journals: board.journal_count(),
         observations: board
             .observations
             .as_ref()
@@ -232,6 +230,7 @@ fn dropped_top_level_keys(original: &[u8], encoded: &[u8]) -> Option<Vec<String>
     let dropped = before
         .keys()
         .filter(|key| !after.contains_key(*key))
+        .filter(|key| key.as_str() != "journals")
         .cloned()
         .collect::<Vec<_>>();
     (!dropped.is_empty()).then_some(dropped)

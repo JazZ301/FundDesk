@@ -5,7 +5,6 @@ pub mod clock;
 pub mod csv;
 pub mod futures_axis;
 pub mod import;
-pub mod journal;
 pub mod market;
 pub mod metrics;
 pub mod model;

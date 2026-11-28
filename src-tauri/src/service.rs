@@ -10,7 +10,7 @@ use funddesk_core::market::{
 use funddesk_core::metrics::{DayProfitExclusion, EstimateHealth, FundMetrics, Portfolio};
 use funddesk_core::model::{
     Board, Estimate, Fund, FundGroup, FundObservation, Holding, MenuBarItem, Nav, ObservationPoint,
-    PositionAction, PositionRecord, Snapshot,
+    Snapshot,
 };
 use funddesk_core::observation::{self, ObservationInput};
 use funddesk_core::provider::now_text;
@@ -26,6 +26,7 @@ use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 use std::future::Future;
+use std::path::PathBuf;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
 use tokio::sync::Semaphore;
@@ -40,6 +41,7 @@ pub struct AppState {
     pub custom_futures: Mutex<Vec<CustomFutures>>,
     pub shanghai_quote: Mutex<Option<IndexQuote>>,
     pub source_error: Mutex<Option<String>>,
+    pub builtin_sources: Option<Sources>,
     pub refreshing: AtomicBool,
 }
 
@@ -51,16 +53,21 @@ pub struct CustomFutures {
 }
 
 impl AppState {
-    pub fn new() -> Self {
+    pub fn new(builtin_sources_path: Option<PathBuf>) -> Self {
         let storage = BoardStorage::from_env();
         let board = storage.open().board;
         let custom_futures = load_custom_futures(&storage);
         let cache = ResearchCache::new(storage.directory());
         let sources_path = storage.sources_path();
-        let (sources, source_error) = match Sources::load(&sources_path) {
-            Ok(sources) => (sources, None),
-            Err(error) => (Sources::default(), Some(error)),
-        };
+        let builtin_sources = builtin_sources_path
+            .as_deref()
+            .and_then(|path| Sources::load(path).ok())
+            .filter(Sources::is_configured);
+        let (sources, source_error) =
+            match Sources::load_or_seed(&sources_path, builtin_sources_path.as_deref()) {
+                Ok(sources) => (sources, None),
+                Err(error) => (Sources::default(), Some(error)),
+            };
         Self {
             storage,
             market: MarketClient::with_sources(sources).expect("创建行情客户端"),
@@ -70,6 +77,7 @@ impl AppState {
             custom_futures: Mutex::new(custom_futures),
             shanghai_quote: Mutex::new(None),
             source_error: Mutex::new(source_error),
+            builtin_sources,
             refreshing: AtomicBool::new(false),
         }
     }
@@ -205,6 +213,7 @@ pub struct DataSourceStatus {
     pub label: String,
     pub missing: Vec<String>,
     pub error: Option<String>,
+    pub default_available: bool,
 }
 
 fn to_f64(value: Option<Decimal>) -> Option<f64> {
@@ -389,6 +398,7 @@ pub fn data_source_status(state: &AppState) -> DataSourceStatus {
         label: sources.label.clone(),
         missing: sources.missing_required(),
         error: state.source_error.lock().unwrap().clone(),
+        default_available: state.builtin_sources.is_some(),
     }
 }
 
@@ -406,6 +416,17 @@ pub fn save_data_sources(state: &AppState, text: &str) -> Result<DataSourceStatu
 
 pub fn clear_data_sources(state: &AppState) -> Result<DataSourceStatus, String> {
     let sources = Sources::default();
+    sources.save(&state.storage.sources_path())?;
+    state.market.set_sources(sources);
+    *state.source_error.lock().unwrap() = None;
+    Ok(data_source_status(state))
+}
+
+pub fn reset_data_sources(state: &AppState) -> Result<DataSourceStatus, String> {
+    let sources = state
+        .builtin_sources
+        .clone()
+        .ok_or_else(|| "安装包中未找到内置数据源配置".to_string())?;
     sources.save(&state.storage.sources_path())?;
     state.market.set_sources(sources);
     *state.source_error.lock().unwrap() = None;
@@ -613,9 +634,6 @@ pub fn remove_fund(state: &AppState, code: &str) -> Result<BoardView, String> {
     let mut board = current.clone();
     board.holdings.retain(|holding| holding.id() != code);
     board.snapshots.remove(code);
-    if let Some(journals) = &mut board.journals {
-        journals.remove(code);
-    }
     if let Some(observations) = &mut board.observations {
         observations.remove(code);
     }
@@ -1566,95 +1584,6 @@ fn five_sessions_from_daily(candles: &[FuturesCandle]) -> Option<FuturesFiveSess
     })
 }
 
-pub fn journal_records(state: &AppState, code: &str) -> Vec<PositionRecord> {
-    state
-        .board
-        .lock()
-        .unwrap()
-        .journals
-        .as_ref()
-        .and_then(|journals| journals.get(code))
-        .cloned()
-        .unwrap_or_default()
-}
-
-#[derive(Clone, Debug, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct JournalInput {
-    pub code: String,
-    pub action: String,
-    pub day: String,
-    pub shares: Option<f64>,
-    pub price: Option<f64>,
-    pub fee: f64,
-    pub distribution: Option<f64>,
-}
-
-pub fn add_journal(state: &AppState, input: JournalInput) -> Result<BoardView, String> {
-    let change = journal_change(&input)?;
-    let mut current = state.board.lock().unwrap();
-    let mut board = current.clone();
-    let index = board
-        .holdings
-        .iter()
-        .position(|holding| holding.id() == input.code)
-        .ok_or_else(|| "未找到基金".to_string())?;
-    let (updated, record) = change
-        .apply(&board.holdings[index], &day(chrono::Utc::now()))
-        .map_err(|error| error.to_string())?;
-    board.holdings[index] = updated;
-    board
-        .journals
-        .get_or_insert_with(HashMap::new)
-        .entry(input.code)
-        .or_default()
-        .push(record);
-    persist_board(&state.storage, &mut current, &board)?;
-    drop(current);
-    Ok(build_view(&board, &state.storage, chrono::Utc::now()))
-}
-
-pub fn replace_journal(
-    state: &AppState,
-    id: &str,
-    input: JournalInput,
-) -> Result<BoardView, String> {
-    let change = journal_change(&input)?;
-    let mut current = state.board.lock().unwrap();
-    let mut board = current.clone();
-    board
-        .replace_journal_record(&input.code, id, &change, &day(chrono::Utc::now()))
-        .map_err(|error| error.to_string())?;
-    persist_board(&state.storage, &mut current, &board)?;
-    drop(current);
-    Ok(build_view(&board, &state.storage, chrono::Utc::now()))
-}
-
-fn journal_change(input: &JournalInput) -> Result<funddesk_core::journal::PositionChange, String> {
-    let action = match input.action.as_str() {
-        "sell" => PositionAction::Sell,
-        "distribution" => PositionAction::Distribution,
-        _ => PositionAction::Buy,
-    };
-    let mut change = funddesk_core::journal::PositionChange::new(action, &input.day);
-    change.shares = input.shares.and_then(Decimal::from_f64_retain);
-    change.price = input.price.and_then(Decimal::from_f64_retain);
-    change.fee = Decimal::from_f64_retain(input.fee).unwrap_or_default();
-    change.distribution = input.distribution.and_then(Decimal::from_f64_retain);
-    Ok(change)
-}
-
-pub fn delete_journal(state: &AppState, code: &str, id: &str) -> Result<BoardView, String> {
-    let mut current = state.board.lock().unwrap();
-    let mut board = current.clone();
-    board
-        .delete_journal_record(code, id)
-        .map_err(|error| error.to_string())?;
-    persist_board(&state.storage, &mut current, &board)?;
-    drop(current);
-    Ok(build_view(&board, &state.storage, chrono::Utc::now()))
-}
-
 pub fn try_begin_refresh(state: &AppState) -> bool {
     state
         .refreshing
@@ -1664,73 +1593,4 @@ pub fn try_begin_refresh(state: &AppState) -> bool {
 
 pub fn clear_refresh_flag(state: &AppState) {
     state.refreshing.store(false, Ordering::SeqCst);
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn failed_writes_keep_persisted_holding_and_journal_and_allow_retry() {
-        let root = std::env::temp_dir().join(format!(
-            "funddesk-save-test-{}-{}",
-            std::process::id(),
-            chrono::Utc::now().timestamp_nanos_opt().unwrap()
-        ));
-        std::fs::create_dir(&root).unwrap();
-        let storage = BoardStorage::new(&root);
-        let mut board = Board::default();
-        let code = "123456";
-        board.add_holding(
-            Fund {
-                code: code.into(),
-                name: "虚构基金".into(),
-                kind: "股票".into(),
-                initials: String::new(),
-                pinyin: String::new(),
-            },
-            None,
-        );
-        let state = AppState {
-            cache: ResearchCache::new(&root),
-            storage,
-            market: MarketClient::with_sources(Sources::default()).unwrap(),
-            board: Mutex::new(board),
-            catalog: Mutex::default(),
-            custom_futures: Mutex::default(),
-            shanghai_quote: Mutex::default(),
-            source_error: Mutex::default(),
-            refreshing: AtomicBool::default(),
-        };
-        let input = JournalInput {
-            code: code.into(),
-            action: "buy".into(),
-            day: "2026-01-01".into(),
-            shares: Some(100.0),
-            price: Some(2.0),
-            fee: 0.0,
-            distribution: None,
-        };
-        let obstruction = root.join("board.json.tmp");
-        std::fs::create_dir(&obstruction).unwrap();
-        let initial = state.board.lock().unwrap().clone();
-        assert!(add_journal(&state, input.clone()).is_err());
-        assert_eq!(*state.board.lock().unwrap(), initial);
-
-        std::fs::remove_dir(&obstruction).unwrap();
-        add_journal(&state, input.clone()).unwrap();
-        let saved = state.storage.open().board;
-        let id = &saved.journals.as_ref().unwrap()[code][0].id;
-        std::fs::create_dir(&obstruction).unwrap();
-        assert!(set_holding(&state, code, Some(25.0), Some(1.0)).is_err());
-        assert!(replace_journal(&state, id, input).is_err());
-        assert!(delete_journal(&state, code, id).is_err());
-        assert_eq!(*state.board.lock().unwrap(), saved);
-        assert_eq!(state.storage.open().board, saved);
-
-        std::fs::remove_dir(&obstruction).unwrap();
-        delete_journal(&state, code, id).unwrap();
-        assert_eq!(state.storage.open().board.journal_count(), 0);
-        std::fs::remove_dir_all(&root).unwrap();
-    }
 }

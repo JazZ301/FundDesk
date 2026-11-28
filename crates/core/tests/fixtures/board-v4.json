@@ -139,27 +139,6 @@
       }
     }
   },
-  "journals": {
-    "007339": [
-      {
-        "id": "0F0E0D0C-0B0A-4908-8706-050403020100",
-        "action": "申购 / 加仓",
-        "day": "2026-11-20",
-        "shares": 10000,
-        "price": 1.5,
-        "fee": 0,
-        "cash": 15000
-      },
-      {
-        "id": "1F1E1D1C-1B1A-4918-8716-151413121110",
-        "action": "现金分红",
-        "day": "2026-11-21",
-        "fee": 0,
-        "cash": 12.34,
-        "realized": 12.34
-      }
-    ]
-  },
   "refreshInterval": 10,
   "appearanceTheme": "system",
   "fundColumnOrder": ["name", "estimateRate", "dayProfit", "value", "profit", "profitRate", "code"],

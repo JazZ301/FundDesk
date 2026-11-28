@@ -13,6 +13,43 @@
 - macOS 安装包使用 ad-hoc 签名，未公证。Windows 包已由 CI 构建并上传签名，但本轮未在 Windows 实机执行安装升级验收。
 
 
+## 2026-11-28 赞赏码尺寸与对齐统一
+
+- 用户反馈「支持开发」两张二维码大小不一致、对齐别扭。根因是两张原图留白不同：支付宝二维码主体 555×555、微信 450×450，按同一宽度显示时二维码视觉尺寸不同；同时图内已烘焙收款人文字，和卡片下方 `small` 重复显示。
+- 两张赞赏码重新裁切为二维码主体，统一缩放到 400×400 后居中放入 500×500 白底画布，保留约 5 个模块的静区，并移除图内收款人文字；源码仍为 `src/assets/support-alipay.jpg` 和 `src/assets/support-wechat.jpg`。
+- `.support-qr-card img` 增加 `aspect-ratio: 1` 和 `object-fit: contain`，确保窄屏下也保持正方形且不被拉伸。
+- `pnpm build` 通过。macOS universal App、DMG 和 updater 产物已重建，ad-hoc 签名、DMG 镜像和哈希校验通过；安装到 `/Applications/基金看板.app`，版本 `1.0.3`。
+- 实机核对浅色与深色主题：两张二维码白底尺寸一致、顶部标签与收款人文字对齐，无重复收款人文字；验收后恢复「跟随系统」主题并重开正式数据。被替换的上一版保存在 `~/Library/Application Support/FundDeskDesktop/app-backup.20261128-212019/基金看板.app`。
+- DMG SHA-256：`9d46c5598bc927b4ccc35e9fc82735dffad052631d335cc5860caecc9d06d449`；updater 归档：`63f9b8da8e5bf1eee023ca80d29c521477a923170a9b13acb83f78398e5a6ba7`。Windows 安装包未重建。
+
+
+## 2026-11-28 设置页支持开发入口
+
+- 设置页新增「支持开发」分类，位于「批量导入持仓」和「关于」之间；右侧显示支付宝、微信赞赏码、说明文字和收款人提示。赞赏码以本地图片打包，不新增后端接口，也不会上传支付信息。
+- 两张图片裁切为白底二维码后放在 `src/assets/`，新增 `src/vite-env.d.ts` 支持 Vite 图片导入；样式补齐深色模式和窄屏布局。
+- `pnpm build` 通过。macOS universal App、DMG 和 updater 产物已重建，ad-hoc 签名、DMG 镜像和哈希校验通过；安装到 `/Applications/基金看板.app`。
+- 使用 `.demo-data` 的 8 只虚构基金启动安装版，实机核对浅色和深色主题下「设置 → 支持开发」：两张二维码清晰、无滚动、说明文字和收款人提示完整；验收后恢复跟随系统主题并重开正式数据目录。
+- DMG SHA-256：`77382a51b93cf09dd0263870e1faf94a9087c2cd7bf29914c18b6ae150288bf3`；updater 归档：`8297b3c6ce5b8bac75d4cbc84ae30c555eb64733d4755dd496b846ee9ac386ee`。被替换的上一版移入 macOS 回收站。Windows 安装包未重建。
+- 风险：当前使用个人静态赞赏码，只适合自愿赞赏，无法自动核对到账；若后续增加金额档位或到账反馈，需要商户动态码、订单号和后端回调。
+
+
+## 2026-11-28 弹窗标题栏布局修复
+
+- 用户反馈设置页的「完成」按钮被挤到标题下方。根因是 `.sheet-head` 只有局部字号与间距规则，没有横向布局定义，标题和按钮按块级元素纵向排列。
+- 为 `.sheet-head` 补齐横向两端对齐、垂直居中和标题零外边距。设置、添加基金和数据源配置三个弹窗共用该标题栏，均已同步修复。
+- `pnpm build` 通过。macOS universal App、DMG 和 updater 产物已重建，ad-hoc 签名、DMG 镜像和哈希校验通过；安装到 `/Applications/基金看板.app` 后启动 `1.0.2`，实机确认三处弹窗的「完成」均位于标题右侧且无挤压。
+- 被替换的上一版保存在 `~/Library/Application Support/FundDeskDesktop/app-backup.20261128-201042/基金看板.app`。本轮 DMG SHA-256 为 `8685ca9cba7367cc5f62e9e776976a11769bfe02f7a5e924b0b29d42d4b22d62`，updater 归档为 `02edd15eec3049ea35b99760982f7d1fdc43768ec69c7cac60c18f31f62c6bc6`。Windows 安装包未重建。
+
+
+## 2026-11-28 移除持仓流水
+
+- 按用户要求彻底下线「持仓流水」：基金详情不再显示流水入口，前端删除流水弹窗、类型和 IPC 调用；Rust 删除流水读写与重算命令，内核删除 `journal.rs`、`PositionRecord`、`PositionAction` 和 `Board.journals`。本地持仓继续直接编辑当前份额和单位成本。
+- 数据定义改为只维护当前 `shares` 与 `costPerShare`。申购、赎回和分红记录由基金销售平台负责，本软件不记录交易流水。旧版 `board.json` 或备份中的顶层 `journals` 可被读取并忽略，新版本保存时不再生成该字段。
+- 前端生产构建、Rust 格式检查和工作区测试通过（79 项通过，3 项忽略）。使用 8 只虚构持仓并注入旧版 `journals` 数据，调试包和安装包均能正常加载；基金详情只显示「编辑持仓」，不再显示「持仓流水」。
+- macOS universal App、DMG 和 updater 产物已重建，ad-hoc 签名、DMG 镜像和哈希校验通过。DMG SHA-256 为 `b8b3bc6208ad495bf9b04cb2c4afa4e966f1fd5d0d5c5fa80b0b43c72a745531`，updater 归档为 `1cb1db4a9cd9bb51a020182a25b67ce68d90accffa67ab99bc60c005827ac04c`。
+- 新包已安装到 `/Applications/基金看板.app`，并在隔离数据验收后恢复正式数据目录启动。被替换的上一版保存在 `~/Library/Application Support/FundDeskDesktop/app-backup.20261128-183420/基金看板.app`。本轮版本号仍为 `1.0.2`，Windows 安装包未重建。
+
+
 ## 2026-11-28 看板估值休市提示
 
 - 看板表格底部显示「A 股周末休市 · 显示最近可用数据」或「A 股节假日休市 · 显示最近可用数据」。交易日缓存超过有效范围时显示「估值已过期」。使用指南已同步。
@@ -460,3 +497,17 @@ GitHub 对 Node 20 runner 的兼容警告通过升级 `actions/checkout@v7`、
 - Windows 10 虚拟机用 x64 NSIS 安装后验证文本导入、文本导出、原生打开和保存面板、带 UTF-8 BOM 的旧版配置、JSON 落盘及前导零与小数。测试使用隔离目录，完成后重新启动正式安装版。
 - macOS App 和 DMG 通过签名及镜像校验。macOS 已重开正式数据目录的安装版并检查设置入口。两套安装包的 SHA-256 已更新。
 - 本地产物的发布签名沿用既有配置。macOS 为 ad-hoc 签名，Windows 安装包未做 Authenticode 签名。
+
+## 2026-11-28 内置默认数据源与交流群说明（v1.0.3）
+
+- 安装包新增 `src-tauri/resources/data-sources.json` 资源，默认地址不再写死在 Rust 代码中；资源通过 `bundle.resources` 打包，macOS 实际位于 `基金看板.app/Contents/Resources/resources/data-sources.json`。
+- `Sources::load_or_seed` 在本机 `data-sources.json` 不存在时，把内置配置复制到数据目录并立即加载；已有空文件、已有自定义配置和非法配置都不覆盖。首次启动即可加载指数、净值和估算。
+- 新增 `reset_data_sources` 命令和「恢复内置默认」按钮，设置页与数据源弹窗都可以一键还原；数据源状态新增 `defaultAvailable`。清空配置仍保持为空，重启不会悄悄改回默认。
+- 设置页数据源卡片改为「当前配置：… 软件已内置可用接口，可按需替换」；无配置且内置可用时显示恢复入口。顶部未配置提示也加入恢复按钮。
+- 微信卡片标题改为「加微信群，交流使用反馈」，正文改为反馈问题、功能建议和版本更新；不再以入群作为获取接口配置的唯一入口。
+- 更新 README、使用指南、数据源配置、数据来源与开源合规、P2 验证记录、CONTRIBUTING 和演示数据说明；重新生成 `docs/guide/screenshots/first-run.png` 与 `data-sources.png`，使用隔离空数据目录，未包含真实持仓。
+- 版本号升级到 `1.0.3`，新增 `release-notes/v1.0.3.md`。
+- `pnpm build` 通过；`cargo test -p funddesk-core` 通过（76 项通过，3 项按原配置忽略）；`cargo check -p funddesk --features funddesk/custom-protocol` 通过。
+- macOS universal App 和 DMG 已重建，ad-hoc 签名与镜像校验通过；已安装到 `/Applications/基金看板.app` 并重启。隔离数据目录实测首次启动自动生成默认 `data-sources.json`，空持仓下七项指数正常加载；设置页显示「当前配置：内置默认配置」，数据源弹窗显示「恢复内置默认」。恢复正式数据目录后复核显示「当前配置：本机兼容配置」，升级未覆盖已有配置。
+- DMG SHA-256：`6046f4e09d44c9d502464c13def081bee2a0fad9eee82dc183a84f20a833e868`；updater 归档 SHA-256：`37500d926823d8cd076ce8b2443047204a7fd3d83a3b855f2cc2a59fe7879d9c`。
+- Windows x64 NSIS 本轮未重建或验证；macOS 仍为 ad-hoc 签名、未公证。

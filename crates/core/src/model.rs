@@ -275,46 +275,6 @@ pub struct FundObservation {
     pub valuation: Option<RedValuation>,
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
-pub enum PositionAction {
-    #[serde(rename = "申购 / 加仓")]
-    Buy,
-    #[serde(rename = "赎回 / 减仓")]
-    Sell,
-    #[serde(rename = "现金分红")]
-    Distribution,
-}
-
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct PositionRecord {
-    pub id: String,
-    pub action: PositionAction,
-    pub day: String,
-    #[serde(
-        default,
-        with = "decimal::option",
-        skip_serializing_if = "Option::is_none"
-    )]
-    pub shares: Option<Decimal>,
-    #[serde(
-        default,
-        with = "decimal::option",
-        skip_serializing_if = "Option::is_none"
-    )]
-    pub price: Option<Decimal>,
-    #[serde(with = "decimal")]
-    pub fee: Decimal,
-    #[serde(with = "decimal")]
-    pub cash: Decimal,
-    #[serde(
-        default,
-        with = "decimal::option",
-        skip_serializing_if = "Option::is_none"
-    )]
-    pub realized: Option<Decimal>,
-}
-
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Board {
@@ -324,8 +284,6 @@ pub struct Board {
     pub snapshots: HashMap<String, Snapshot>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub observations: Option<HashMap<String, FundObservation>>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub journals: Option<HashMap<String, Vec<PositionRecord>>>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub refresh_interval: Option<i32>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -354,13 +312,6 @@ impl Board {
             Some(60) => 60,
             _ => 10,
         }
-    }
-
-    pub fn journal_count(&self) -> usize {
-        self.journals
-            .as_ref()
-            .map(|journals| journals.values().map(Vec::len).sum())
-            .unwrap_or(0)
     }
 
     pub fn menu_bar_visible_value(&self) -> bool {

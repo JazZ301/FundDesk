@@ -3,7 +3,6 @@ use funddesk_core::backup::BoardBackup;
 use funddesk_core::clock::{can_poll_estimates, day, is_fresh_estimate};
 use funddesk_core::csv;
 use funddesk_core::futures_axis::tick_indices;
-use funddesk_core::journal::{PositionChange, PositionJournalReplay};
 use funddesk_core::metrics::{EstimateHealth, FundMetrics, Portfolio};
 use funddesk_core::model::*;
 use funddesk_core::observation;
@@ -204,74 +203,6 @@ fn metrics_and_portfolio_match_swift() {
     assert_eq!(
         health.missing_count,
         expected["missing"].as_u64().unwrap() as usize
-    );
-}
-
-#[test]
-fn journal_matches_swift() {
-    let golden = golden();
-    let fund = Fund {
-        code: "007339".to_string(),
-        name: "易方达沪深300ETF联接C".to_string(),
-        kind: "指数型".to_string(),
-        initials: String::new(),
-        pinyin: String::new(),
-    };
-    let mut holding = Holding {
-        fund,
-        shares: None,
-        cost_per_share: None,
-        groups: None,
-    };
-    let mut records = Vec::new();
-    let changes = [
-        (PositionAction::Buy, 10000.0, Some(1.5), 0.0, None),
-        (PositionAction::Buy, 5000.0, Some(1.2), 5.0, None),
-        (PositionAction::Sell, 3000.0, Some(1.8), 2.0, None),
-        (PositionAction::Distribution, 0.0, None, 0.0, Some(12.34)),
-    ];
-    let days = ["2026-11-20", "2026-11-21", "2026-11-22", "2026-11-23"];
-    let expected_steps = golden["journal"]["steps"].as_array().unwrap();
-    for (index, (action, shares, price, fee, distribution)) in changes.into_iter().enumerate() {
-        let mut change = PositionChange::new(action, days[index]);
-        change.shares = Some(Decimal::from_f64_retain(shares).unwrap());
-        change.price = price.map(|value| Decimal::from_f64_retain(value).unwrap());
-        change.fee = Decimal::from_f64_retain(fee).unwrap();
-        change.distribution = distribution.map(|value| Decimal::from_f64_retain(value).unwrap());
-        let (updated, record) = change.apply(&holding, "2026-11-26").unwrap();
-        holding = updated;
-        records.push(record);
-        let expected = &expected_steps[index];
-        assert_number(holding.shares, &expected["shares"], "journal.shares");
-        assert_number(holding.cost_per_share, &expected["cost"], "journal.cost");
-        assert_number(Some(records[index].cash), &expected["cash"], "journal.cash");
-        assert_number(
-            records[index].realized,
-            &expected["realized"],
-            "journal.realized",
-        );
-        assert_number(Some(records[index].fee), &expected["fee"], "journal.fee");
-    }
-
-    let base = PositionJournalReplay::infer_base(&holding, &records).unwrap();
-    let expected_base = &golden["journal"]["base"];
-    assert_number(base.shares, &expected_base["shares"], "journal.base.shares");
-    assert_number(
-        base.cost_per_share,
-        &expected_base["cost"],
-        "journal.base.cost",
-    );
-    let replayed = PositionJournalReplay::replay(&base, &records).unwrap();
-    let expected_replayed = &golden["journal"]["replayed"];
-    assert_number(
-        replayed.shares,
-        &expected_replayed["shares"],
-        "journal.replayed.shares",
-    );
-    assert_number(
-        replayed.cost_per_share,
-        &expected_replayed["cost"],
-        "journal.replayed.cost",
     );
 }
 

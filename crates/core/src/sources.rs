@@ -106,6 +106,25 @@ impl Sources {
         }
     }
 
+    /// Load the user's configuration. When the file does not exist yet, copy
+    /// the config bundled with the installer into the user data directory so
+    /// the app works out of the box. An existing empty file is respected.
+    pub fn load_or_seed(path: &Path, builtin: Option<&Path>) -> Result<Self, String> {
+        if path.exists() {
+            return Self::load(path);
+        }
+        let Some(builtin_path) = builtin else {
+            return Ok(Self::default());
+        };
+        let defaults =
+            Self::load(builtin_path).map_err(|error| format!("内置数据源配置无效：{error}"))?;
+        if !defaults.is_configured() {
+            return Err("内置数据源配置缺少必要地址".to_string());
+        }
+        defaults.save(path)?;
+        Ok(defaults)
+    }
+
     pub fn save(&self, path: &Path) -> Result<(), String> {
         self.validate()?;
         if let Some(parent) = path.parent() {
@@ -293,5 +312,94 @@ mod tests {
         assert_eq!(loaded.label, "测试");
         assert_eq!(loaded.eastmoney.fund, "https://example.com/fund");
         let _ = std::fs::remove_file(path);
+    }
+
+    fn temp_path(name: &str) -> std::path::PathBuf {
+        std::env::temp_dir().join(format!(
+            "funddesk-sources-{name}-{}-{}.json",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ))
+    }
+
+    fn complete_config(label: &str) -> String {
+        format!(
+            r#"{{
+                "label": "{label}",
+                "eastmoney": {{
+                    "fund": "https://example.com/fund",
+                    "fundApi": "https://example.com/fund-api",
+                    "fundMobile": "https://example.com/fund-mobile",
+                    "fundSuggest": "https://example.com/fund-suggest",
+                    "fundF10": "https://example.com/fund-f10",
+                    "data": "https://example.com/data",
+                    "push2": "https://example.com/push2",
+                    "push2his": "https://example.com/push2his",
+                    "push2delay": "https://example.com/push2delay"
+                }},
+                "sina": {{
+                    "finance": "https://example.com/sina-finance",
+                    "hq": "https://example.com/sina-hq",
+                    "stock": "https://example.com/sina-stock",
+                    "stock2": "https://example.com/sina-stock2",
+                    "vip": "https://example.com/sina-vip"
+                }},
+                "tencent": {{
+                    "qt": "https://example.com/tencent-qt",
+                    "ifzq": "https://example.com/tencent-ifzq",
+                    "portal": "https://example.com/tencent-portal"
+                }},
+                "yahoo": {{ "query1": "" }}
+            }}"#
+        )
+    }
+
+    #[test]
+    fn seeds_bundled_config_when_user_file_is_missing() {
+        let user_path = temp_path("seed-user");
+        let builtin_path = temp_path("seed-builtin");
+        fs::write(&builtin_path, complete_config("内置默认配置")).unwrap();
+
+        let loaded = Sources::load_or_seed(&user_path, Some(&builtin_path)).unwrap();
+        assert!(loaded.is_configured());
+        assert_eq!(loaded.label, "内置默认配置");
+        assert!(user_path.exists());
+        assert_eq!(
+            Sources::load(&user_path).unwrap().eastmoney.fund,
+            "https://example.com/fund"
+        );
+
+        let _ = fs::remove_file(user_path);
+        let _ = fs::remove_file(builtin_path);
+    }
+
+    #[test]
+    fn keeps_existing_empty_user_config() {
+        let user_path = temp_path("empty-user");
+        let builtin_path = temp_path("empty-builtin");
+        fs::write(&user_path, "{}").unwrap();
+        fs::write(&builtin_path, complete_config("内置默认配置")).unwrap();
+
+        let loaded = Sources::load_or_seed(&user_path, Some(&builtin_path)).unwrap();
+        assert!(!loaded.has_any());
+
+        let _ = fs::remove_file(user_path);
+        let _ = fs::remove_file(builtin_path);
+    }
+
+    #[test]
+    fn reports_invalid_bundled_config() {
+        let user_path = temp_path("invalid-user");
+        let builtin_path = temp_path("invalid-builtin");
+        fs::write(&builtin_path, "not json").unwrap();
+
+        let error = Sources::load_or_seed(&user_path, Some(&builtin_path)).unwrap_err();
+        assert!(error.contains("内置数据源配置无效"));
+        assert!(!user_path.exists());
+
+        let _ = fs::remove_file(builtin_path);
     }
 }

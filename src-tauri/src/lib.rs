@@ -6,10 +6,11 @@ use funddesk_core::market::{
     index_session, FuturesIntraday, IndexQuote, IndexTradingSession, IndexTrendData, MarketIndex,
 };
 use funddesk_core::metrics::Portfolio;
-use funddesk_core::model::{Fund, MenuBarItem, PositionRecord};
+use funddesk_core::model::{Fund, MenuBarItem};
 use funddesk_core::provider::now_text;
 use rust_decimal::Decimal;
 use std::io::Write;
+use std::path::PathBuf;
 use std::sync::atomic::Ordering;
 use std::time::Duration;
 use tauri::menu::{Menu, MenuItem};
@@ -48,6 +49,11 @@ fn save_data_sources(
 #[tauri::command]
 fn clear_data_sources(state: State<'_, AppState>) -> Result<service::DataSourceStatus, String> {
     service::clear_data_sources(&state)
+}
+
+#[tauri::command]
+fn reset_data_sources(state: State<'_, AppState>) -> Result<service::DataSourceStatus, String> {
+    service::reset_data_sources(&state)
 }
 
 #[tauri::command]
@@ -368,39 +374,6 @@ async fn futures_detail(app: AppHandle, symbol: String) -> Result<FuturesDetailV
     service::futures_detail(&state, &symbol).await
 }
 
-#[tauri::command]
-fn journal_records(state: State<'_, AppState>, code: String) -> Vec<PositionRecord> {
-    service::journal_records(&state, &code)
-}
-
-#[tauri::command]
-fn add_journal(app: AppHandle, payload: service::JournalInput) -> Result<BoardView, String> {
-    let state = app.state::<AppState>();
-    let view = service::add_journal(&state, payload)?;
-    let _ = app.emit("board://updated", &view);
-    Ok(view)
-}
-
-#[tauri::command]
-fn delete_journal(app: AppHandle, code: String, id: String) -> Result<BoardView, String> {
-    let state = app.state::<AppState>();
-    let view = service::delete_journal(&state, &code, &id)?;
-    let _ = app.emit("board://updated", &view);
-    Ok(view)
-}
-
-#[tauri::command]
-fn replace_journal(
-    app: AppHandle,
-    id: String,
-    payload: service::JournalInput,
-) -> Result<BoardView, String> {
-    let state = app.state::<AppState>();
-    let view = service::replace_journal(&state, &id, payload)?;
-    let _ = app.emit("board://updated", &view);
-    Ok(view)
-}
-
 fn show_main(app: &AppHandle) {
     #[cfg(target_os = "macos")]
     let _ = app.show();
@@ -664,6 +637,26 @@ fn start_board_loop(app: AppHandle) {
     });
 }
 
+fn builtin_sources_path(app: &AppHandle) -> Option<PathBuf> {
+    use tauri::path::BaseDirectory;
+
+    let resolved = app
+        .path()
+        .resolve("resources/data-sources.json", BaseDirectory::Resource)
+        .ok();
+    if let Some(path) = resolved.as_ref().filter(|path| path.is_file()) {
+        return Some(path.clone());
+    }
+    #[cfg(debug_assertions)]
+    {
+        let dev = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("resources/data-sources.json");
+        if dev.is_file() {
+            return Some(dev);
+        }
+    }
+    resolved.filter(|path| path.exists())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let app = tauri::Builder::default()
@@ -674,13 +667,13 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_process::init())
-        .manage(AppState::new())
         .invoke_handler(tauri::generate_handler![
             bootstrap,
             data_sources,
             data_sources_text,
             save_data_sources,
             clear_data_sources,
+            reset_data_sources,
             read_data_source_file,
             refresh_board,
             indices,
@@ -706,13 +699,10 @@ pub fn run() {
             add_futures,
             remove_futures,
             futures_intraday,
-            futures_detail,
-            journal_records,
-            add_journal,
-            replace_journal,
-            delete_journal
+            futures_detail
         ])
         .setup(|app| {
+            app.manage(AppState::new(builtin_sources_path(app.handle())));
             let open = MenuItem::with_id(app, "open", "打开看板", true, None::<&str>)?;
             let refresh = MenuItem::with_id(app, "refresh", "刷新行情", true, None::<&str>)?;
             let quit = MenuItem::with_id(app, "quit", "退出", true, None::<&str>)?;

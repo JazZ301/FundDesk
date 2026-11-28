@@ -1240,7 +1240,7 @@ dependencies = [
 
 [[package]]
 name = "funddesk"
-version = "1.0.2"
+version = "1.0.3"
 dependencies = [
  "block2",
  "chrono",

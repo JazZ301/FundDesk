@@ -13,6 +13,7 @@ board.json
 board.backup.json
 catalog.json
 data-sources.json
+!src-tauri/resources/data-sources.json
 futures-watchlist.json
 research-v1/
 *.dmg

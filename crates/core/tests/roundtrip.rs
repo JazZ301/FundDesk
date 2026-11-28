@@ -12,7 +12,6 @@ fn decodes_every_model_field() {
 
     assert_eq!(board.holdings.len(), 3);
     assert_eq!(board.snapshots.len(), 3);
-    assert_eq!(board.journal_count(), 2);
     assert_eq!(board.observations.as_ref().unwrap().len(), 2);
     assert_eq!(board.refresh_interval, Some(10));
     assert_eq!(board.holdings[0].shares.unwrap().to_string(), "10000");
@@ -53,12 +52,31 @@ fn decodes_every_model_field() {
 }
 
 #[test]
+fn ignores_legacy_journal_payload() {
+    let mut value: serde_json::Value =
+        serde_json::from_slice(&std::fs::read(fixture()).unwrap()).unwrap();
+    value["journals"] = serde_json::json!({
+        "007339": [{
+            "id": "legacy",
+            "action": "申购 / 加仓",
+            "day": "2026-11-20",
+            "shares": 10000,
+            "price": 1.5,
+            "fee": 0,
+            "cash": 15000
+        }]
+    });
+    let board: Board = serde_json::from_value(value).unwrap();
+    let encoded = serde_json::to_value(board).unwrap();
+    assert!(encoded.get("journals").is_none());
+}
+
+#[test]
 fn reencodes_to_equivalent_board() {
     let report = roundtrip_file(&fixture()).unwrap();
     assert!(report.ok, "{:?}", report.notes);
     assert!(report.notes.is_empty(), "{:?}", report.notes);
     assert_eq!(report.holdings, 3);
-    assert_eq!(report.journals, 2);
     assert_eq!(report.observations, 2);
 }
 

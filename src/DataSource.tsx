@@ -62,6 +62,24 @@ export default function DataSourceDialog({
     }
   };
 
+  const restoreDefaults = async () => {
+    if (!window.confirm("用安装包内置的接口配置覆盖当前配置？")) return;
+    setBusy(true);
+    setNotice("");
+    setError("");
+    try {
+      const next = await api.resetDataSources();
+      setCurrent(next);
+      onSaved(next);
+      setText(await api.dataSourcesText());
+      setNotice("已恢复内置默认配置，并立即应用。");
+    } catch (reason) {
+      setError(String(reason));
+    } finally {
+      setBusy(false);
+    }
+  };
+
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal transfer-modal data-source-modal" onClick={(event) => event.stopPropagation()}>
@@ -94,11 +112,16 @@ export default function DataSourceDialog({
             disabled={busy}
             spellCheck={false}
             rows={13}
-            placeholder="粘贴社群提供的数据源 JSON，或选择配置文件"
+            placeholder="粘贴数据源 JSON，或选择配置文件"
           />
         </div>
 
         <div className="section-actions">
+          {current.defaultAvailable && (
+            <button type="button" className="ghost" disabled={busy} onClick={() => void restoreDefaults()}>
+              恢复内置默认
+            </button>
+          )}
           <button
             type="button"
             className="ghost"
