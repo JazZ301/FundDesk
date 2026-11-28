@@ -123,6 +123,31 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD || '' }}
         with:
           args: --target ${{ matrix.target }} ${{ env.TAURI_EXTRA_ARGS }}
+      - name: Prepare mirrored update manifest
+        if: matrix.os == 'macos-15'
+        shell: bash
+        run: |
+          version=$(node -p "require('./src-tauri/tauri.conf.json').version")
+          latest="target/universal-apple-darwin/release/bundle/latest.json"
+          if [ ! -f "$latest" ]; then
+            echo "::error::tauri-action did not generate $latest" >&2
+            exit 1
+          fi
+          cp "$latest" "latest.json"
+          node - "$version" <<'NODE'
+          const fs = require('fs');
+          const version = process.argv[2];
+          const data = JSON.parse(fs.readFileSync('latest.json', 'utf8'));
+          for (const platform of Object.values(data.platforms ?? {})) {
+            if (typeof platform.url !== 'string') continue;
+            platform.url = platform.url.replace(
+              'https://github.com/',
+              'https://ghfast.top/github.com/'
+            );
+          }
+          fs.writeFileSync(`latest-cn-${version}.json`, JSON.stringify(data, null, 2) + '\n');
+          NODE
+
       - name: Upload release bundles
         uses: actions/upload-artifact@v7
         id: upload-bundles
@@ -138,6 +163,8 @@ jobs:
             target/**/bundle/msi/*.msi.sig
             target/**/bundle/msi/*.msi.zip
             target/**/bundle/msi/*.msi.zip.sig
+            latest.json
+            latest-cn-*.json
           if-no-files-found: error
 
   require-bundles:

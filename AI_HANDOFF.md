@@ -1,5 +1,15 @@
 # FundDesk（基金看板）交接
 
+## 2026-11-28 国内镜像加速
+
+- 客户端 updater 端点改为「国内加速清单优先、GitHub 官方清单兜底」：新增 `latest-cn-v1.0.1.json`，其下载 URL 指向 `ghfast.top` 代理的 GitHub Release 资产；签名字符串、公钥和 `requireSignedVersion` 全部沿用原值，不降低校验强度。
+- `.github/workflows/release.yml` 在 macOS 构建后从 tauri-action 生成的 `latest.json` 自动派生 `latest-cn-<version>.json`，并把两份清单都作为构建 artifact 上传；后续 Release 发布需同时上传该国内清单。
+- 已验证国内清单可从 `releases/latest/download/latest-cn-v1.0.1.json` 经加速域名读取，版本为 `1.0.1`，三个平台键齐全；macOS 双架构签名与原 `.sig` 完全一致。
+- 已验证清单中的 macOS 更新包和 Windows 安装包经国内加速 URL 均返回 HTTP 200，字节数分别为 12,305,400 和 3,818,218；下载内容与原 Release 资产一致。
+- 重新构建 universal App/DMG（包含国内端点配置），归档内版本为 `1.0.1`，签名 trusted comment 为 `version:1.0.1`，DMG 镜像校验通过；新 DMG SHA-256 `c528b09661297676b777d99864896b28c34125991eb6fcc77c8e0049a2ed14b3`，归档 SHA-256 `2f0c9a045feb0c4f5e372c7b2185922c7d56eeb04a2e26e72e06528c3fba04e5`。
+- 当前 Release 资产仍为上一版 `1.0.1` 安装包；本次仅新增并验证国内清单。下一次发布会把新版安装包与对应清单一起上传，避免签名、版本或哈希错配。
+- 临时上传 PAT `funddesk-cn-manifest` 已撤销并确认令牌列表为空。
+
 ## 发布 Skill：FundDesk `v*` 版本发布（下次直接照做）
 
 ### 为什么 `v1.0.1` 这次接近 2 小时

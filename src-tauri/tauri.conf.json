@@ -60,6 +60,7 @@
     "updater": {
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEU5RUJEMDkwMDM5RkQ4M0MKUldRODJKOERrTkRyNlIzUXBPN2lTd2lEVVg2cCtQSTdkMEhLemhoaDh0YzRlTU9RL1JhQXMxM1QK",
       "endpoints": [
+        "https://ghfast.top/https://github.com/JazZ301/FundDesk/releases/latest/download/latest-cn-v1.0.1.json",
         "https://github.com/JazZ301/FundDesk/releases/latest/download/latest.json"
       ],
       "windows": {
