@@ -1,5 +1,13 @@
 # FundDesk（基金看板）交接
 
+## 2026-11-28 使用指南补充详情与观察配图
+
+- 使用指南第 5 节由「五个标签」更正为六个标签，并为持仓明细、净值估算、历史净值、累计收益、基金概况分别加入独立截图和指标说明；新增「观察数据」入口说明。
+- 第 6 节拆分为 MACD 观察与红利观察两个子节，补充适配度、区间收益、最大回撤、已平仓胜率、净值与 MACD 双图、评分口径、红利综合分区、近一年区间位置、40 日相对强弱和四锚评分说明。
+- 新增 10 张 2320×1620 实机截图：`fund-detail-holdings.png`、`fund-detail-estimate.png`、`fund-detail-history.png`、`fund-detail-cumulative.png`、`fund-detail-profile.png`、`macd-observation.png`、`macd-chart.png`、`macd-metrics.png`、`red-observation.png`、`red-metrics.png`。
+- 截图使用隔离数据目录中的 8 只虚构持仓和正式数据源；基金详情示例为易方达沪深300ETF联接A，MACD 示例为国联安中证半导体ETF联接A，红利示例为大成中证红利指数A，不对应真实账户。
+- 本轮仅修改文档和截图，不改应用代码，未重新打包。截图后已退出演示实例并恢复正式数据目录启动。
+
 ## 2026-11-28 仓库替换与品牌统一
 
 - GitHub `JazZ301/FundDesk` 的 `main` 已整体替换为当前 Tauri 2 + Rust + React 源码，旧的 Swift `Package.swift`、`Sources/`、`Tests/`、脚本和文档均已移除；替换提交为 `a9786d2537c72f19148954825d953e4f1eda7e5d`，最终源码树与本地提交 `f6a9684` 完全一致。
