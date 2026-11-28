@@ -89,7 +89,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          args: --target ${{ matrix.target }} ${{ env.TAURI_EXTRA_ARGS }}
+          args: --target ${{ matrix.target }} --config tauri.ci.conf.json ${{ env.TAURI_EXTRA_ARGS }}
       - uses: actions/upload-artifact@v4
         with:
           name: funddesk-desktop-${{ matrix.artifact }}

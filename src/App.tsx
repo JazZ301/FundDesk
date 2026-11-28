@@ -18,6 +18,7 @@ import MarketCenter from "./MarketCenter";
 import FuturesView from "./Futures";
 import PluginDataTransfer from "./PluginDataTransfer";
 import DataSourceDialog from "./DataSource";
+import UpdatePanel from "./UpdatePanel";
 
 type Section = "all" | "holding" | "macd" | "red" | "market" | "futures" | "settings";
 type SortKey =
@@ -48,7 +49,8 @@ const ICONS = {
   info: "M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM12 11v6M12 7h.01",
   theme: "M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM12 2v20",
   timer: "M12 22a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 9v5l3 2M9 2h6",
-  menuBar: "M3 4h18v16H3zM7 8h4v8H7zM14 8h3M14 12h3M14 16h3"
+  menuBar: "M3 4h18v16H3zM7 8h4v8H7zM14 8h3M14 12h3M14 16h3",
+  shield: "M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6l-8-3zM12 8v5M12 16h.01"
 };
 
 function Icon({ name }: { name: keyof typeof ICONS }) {
@@ -609,7 +611,7 @@ function FundTable({
 }
 
 const SETTINGS_TABS: {
-  id: "appearance" | "refresh" | "menuBar" | "sources" | "about";
+  id: "appearance" | "refresh" | "menuBar" | "sources" | "about" | "disclaimer";
   label: string;
   hint: string;
   icon: keyof typeof ICONS;
@@ -618,7 +620,8 @@ const SETTINGS_TABS: {
   { id: "refresh", label: "刷新间隔", hint: "自动检查", icon: "timer" },
   { id: "menuBar", label: "菜单栏", hint: "上证与收益", icon: "menuBar" },
   { id: "sources", label: "数据源", hint: "接口配置", icon: "wifi" },
-  { id: "about", label: "关于与免责声明", hint: "使用说明", icon: "info" }
+  { id: "about", label: "关于", hint: "版本与更新", icon: "info" },
+  { id: "disclaimer", label: "免责声明", hint: "使用风险", icon: "shield" }
 ];
 
 type SettingsTab = (typeof SETTINGS_TABS)[number]["id"];
@@ -815,8 +818,11 @@ function SettingsDialog({
                 </section>
               )}
               {tab === "about" && (
+                <UpdatePanel />
+              )}
+              {tab === "disclaimer" && (
                 <section className="settings-card settings-disclaimer">
-                  <h3><span className="settings-icon"><Icon name="info" /></span>关于与免责声明</h3>
+                  <h3><span className="settings-icon"><Icon name="shield" /></span>免责声明</h3>
                   <p>
                     本软件仅供学习和研究使用，不构成任何投资建议或操作依据。行情、净值、估值等数据均来自第三方公开接口，
                     可能存在延迟、缺失、口径差异或错误。本软件不对数据的准确性、完整性和及时性作出保证，亦不承担因使用

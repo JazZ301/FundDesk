@@ -3443,6 +3443,130 @@ select {
   line-height: 1.7;
 }
 
+.update-icon {
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: var(--brand-soft);
+  color: var(--brand-strong);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 15px;
+  text-align: center;
+}
+
+.update-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.update-head strong {
+  display: block;
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.update-head small {
+  display: block;
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 10.5px;
+}
+
+.update-status {
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.update-status b {
+  color: var(--brand-strong);
+}
+
+.update-status.ok {
+  color: var(--down);
+}
+
+.update-status.error-text {
+  color: var(--up);
+}
+
+.update-notes {
+  max-height: 132px;
+  margin-top: 8px;
+  padding: 8px 10px;
+  overflow-y: auto;
+  border-radius: 7px;
+  background: var(--panel-raised);
+  color: var(--muted);
+  font-size: 10.5px;
+  line-height: 1.65;
+  white-space: pre-wrap;
+}
+
+.update-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 9px;
+}
+
+.update-actions .update-status {
+  flex: 1;
+  min-width: 180px;
+  margin: 0;
+}
+
+.update-progress {
+  margin-top: 10px;
+}
+
+.update-progress-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  color: var(--muted);
+  font-size: 10.5px;
+  font-weight: 600;
+}
+
+.update-progress-track {
+  height: 6px;
+  margin-top: 7px;
+  overflow: hidden;
+  border-radius: 99px;
+  background: var(--line-soft);
+}
+
+.update-progress-track span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--brand), var(--brand-strong));
+  transition: width 180ms ease;
+}
+
+.update-progress small {
+  display: block;
+  margin-top: 5px;
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.update-fallback {
+  margin-top: 7px !important;
+  color: var(--muted);
+  font-size: 10px !important;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
 @media (max-width: 640px) {
   .settings-modal {
     height: min(640px, 90vh);

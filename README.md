@@ -120,3 +120,4 @@ FUND_DESK_REAL_BOARD="$HOME/Library/Application Support/FundDeskDesktop/board.js
 - macOS 安装包为 universal 版本，当前使用 ad-hoc 签名，未经过 Apple 公证。
 - Windows 安装包为 x64 NSIS，当前未做 Authenticode 签名，SmartScreen 可能提示。
 - 发布前请按[公开到 GitHub 前的检查清单](docs/guide/数据来源与开源合规.md#6-公开到-github-前的检查清单)核对许可证、截图和真实数据。
+- 设置页「关于」可以手动检查更新；发布流程说明见 [检查更新与自动更新方案](docs/P7-检查更新.md)。

@@ -1,5 +1,22 @@
 # FundDesk（基金看板）交接
 
+## 2026-11-28 检查更新功能接入
+
+- 接入 Tauri updater/process：设置页左侧新增独立的「关于」与「免责声明」入口；「关于」页显示当前版本、手动检查、更新说明、下载进度、安装完成和重启按钮。无更新清单时显示「暂时没有可用的更新清单」，不误报失败。
+- 生成 minisign 密钥；私钥保存在 `~/.tauri/funddesk.key` 且未进仓库，公钥写入 `src-tauri/tauri.conf.json`。启用 `createUpdaterArtifacts`、`requireSignedVersion` 和 Windows `passive` 安装模式；macOS 改为 Tauri 打包阶段 ad-hoc 签名，使 updater 归档里的 App 也带签名。
+- 新增 `.github/workflows/release.yml`：由 `v*` tag 触发，校验 tag 与三处版本号一致，双平台构建，上传 draft Release 与 `latest.json`。日常 `build.yml` 通过 `tauri.ci.conf.json` 关闭 updater 产物，避免未配置签名 Secrets 时失败。
+- 本地完成完整升级演练：`1.0.0` 从临时本地更新源发现 `1.0.1`，下载并校验签名后替换 `/Applications/基金看板.app`，重启后版本号为 `1.0.1`，随后恢复正式 `1.0.0` 安装。
+- 验证：`pnpm build`、`cargo fmt --check`、`cargo test --workspace` 通过（82 项通过，3 项按原配置忽略）。macOS universal App/DMG 重建，App 与 DMG 的 ad-hoc 签名及 DMG 镜像校验通过；DMG 内二进制为 x86_64+arm64。安装版实机确认两个独立设置入口及无清单检查状态。
+- 新 DMG SHA-256 为 `9068a1b74871e8b7998c328f66d9470e213dadd5a742a2ea0ddbbc0ceb34d3a7`，updater 归档为 `0333fce016a0aa85fb7beb3132c99cf1a3358a61349e692ba608bdfddb379b73`。Windows 安装包本轮未重编，沿用旧校验值。
+- 待办：发布者需在 GitHub 仓库添加 `TAURI_SIGNING_PRIVATE_KEY` 和 `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` Secrets；当前 `v1.0.0` Release 尚无 `latest.json`，下一次 `v1.0.1` 发布后才会生效。启动后自动检查和 24 小时节流尚未实现。
+
+## 2026-11-28 检查更新方案设计
+
+- 新增 `docs/P7-检查更新.md`，确定采用 GitHub 公开 Release + 静态 `latest.json` 的免服务器方案，不引入自建后端。
+- 设计包含 Tauri updater/process 接入、macOS universal 双平台键、minisign 签名与密钥管理、GitHub Actions 发布流程、设置页状态机、失败回滚和中国网络下的镜像预案。
+- 明确两个关键风险：当前 macOS 脚本在 Tauri 生成 updater 归档后才手动 ad-hoc 签名，需改为打包阶段签名；私有仓库 Release 资产不能匿名下载，方案依赖仓库保持公开。
+- 本轮仅新增设计文档并更新文档索引、P6 指引与交接，未改应用代码、依赖或发布工作流，未重新打包。
+
 ## 2026-11-28 使用指南补充详情与观察配图
 
 - 使用指南第 5 节由「五个标签」更正为六个标签，并为持仓明细、净值估算、历史净值、累计收益、基金概况分别加入独立截图和指标说明；新增「观察数据」入口说明。
