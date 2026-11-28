@@ -50,9 +50,17 @@ GitHub 对 Node 20 runner 的兼容警告通过升级 `actions/checkout@v7`、
 当前已使用 `node24`。新增 Action 时先检查其 `action.yml` 的 `runs.using`，不要再引入
 `node20` 版本，避免以后从警告升级为硬失败。
 
+### v1.0.1 macOS updater 修复（2026-11-28 15:30 GMT+8）
+
+- 已从正式 Release 的 `FundDesk-1.0.1-macOS-universal.dmg` 取得验收通过的 `1.0.1` App，生成新的 `FundDesk-1.0.1-macOS-universal.app.tar.gz`，并用 `~/.tauri/funddesk.key` 以 `pnpm tauri signer sign --app-version 1.0.1` 重新签名。
+- 新归档内 `基金看板.app/Contents/Info.plist` 的 `CFBundleShortVersionString` 为 `1.0.1`；签名 trusted comment 包含 `version:1.0.1`。
+- 新 SHA-256：macOS updater 归档 `2f9d4733df7b6ae7abf28a4c471a04dfd4c9299419fa19c98b94a6166fe38a1b`，macOS 签名 `d2baa02e5c4814d0cb52ac163495cd796e802e8d6387099c0c60e89b3af5f3e9`，`latest.json` `47de46e6a37055a68ce247203a2dea795f7da2051a2aae3fecad4056f959ee87`，`SHA256SUMS.txt` `eda44fc3614a7246f8ce7af4823cddf24f193904a2262417eee89585530b0d76`。DMG 与 Windows 两项哈希未变。
+- 已通过 GitHub Release 编辑器删除旧的错误 macOS updater、签名、`latest.json` 和校验清单，再用短期 classic PAT `funddesk-release-assets-fix` 通过 API 逐项重传 4 个资产；令牌随后已在 GitHub UI 删除并确认列表为空。
+- 公开验证：7 个 Release 资产齐全；`SHA256SUMS.txt` 六项校验全部 OK；`latest.json` 的 macOS 双平台签名与新 `.sig` 文件内容一致；平台键为 `darwin-aarch64`、`darwin-x86_64`、`windows-x86_64`。
+- 真机升级验证：恢复 `1.0.0` 安装后在设置页手动检查，发现 `1.0.1` 并展示更新说明；下载、验签、安装成功；点击「立即重启」后应用显示 `基金看板 1.0.1`，持仓金额仍为 `¥1,259,592.50`，共 17 只自选，数据未丢失。
+
 ### 本次遗留风险
 
-- Release 的 macOS updater `.app.tar.gz` 内版本仍为 `1.0.0`，不能作为从 `1.0.0` 自动升级到 `1.0.1` 的有效更新包；DMG 安装版已是 `1.0.1`。
 - Windows CI 本次仍有失败，Release 中的 Windows 安装包来自此前成功产物并重新签名；下次应修复 Windows job 稳定性。
 - macOS 仍为 ad-hoc 签名、未公证；Windows 未做 Authenticode 签名。
 
@@ -65,7 +73,7 @@ GitHub 对 Node 20 runner 的兼容警告通过升级 `actions/checkout@v7`、
 - 验证：`pnpm build`、`cargo fmt --check`、`cargo test --workspace` 通过（82 项通过，3 项按原配置忽略）。macOS universal App/DMG 重建，App 与 DMG 的 ad-hoc 签名及 DMG 镜像校验通过；DMG 内二进制为 x86_64+arm64。安装版实机确认两个独立设置入口及无清单检查状态。
 - `v1.0.1` 已发布：https://github.com/JazZ301/FundDesk/releases/tag/v1.0.1 ，Latest Release 与公开 `latest.json` 均解析为 `1.0.1`。Release 包含 macOS DMG、macOS updater 归档及签名、Windows NSIS 安装包及签名、`latest.json` 和 `SHA256SUMS.txt`；GitHub 页面显示的 7 个文件摘要与本地构建一致。
 - GitHub Secrets `TAURI_SIGNING_PRIVATE_KEY` 与 `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` 已添加并更新；上传 Release 资产时临时创建的 classic PAT `funddesk-release-upload` 已在 GitHub UI 删除并确认消失。私钥和令牌均未进入仓库、日志或文档。
-- 发布资产 SHA-256：DMG `bfc15bbb17dc6fabfd5c2760e2d090b859b1f21a0472638d3616e3efbb19aaa6`，macOS updater 归档 `6fcbf84be92144d1236fed1860bf5bac9f2139ae2672f6032e606e950bc97aad`，macOS 签名 `3d46652370676105b27c88b938f7a99795b5a91c6ebb4510903cf0e02f1bb677`，Windows 安装包 `5e3858b8dbd88e43be2967f723a5ebffb68aa7199d71276d0aac13212038b2d4`，Windows 签名 `fd1cbaae0e2f4341f8e38107943251bafcb56d41ee91ee44be28ce75d1f5874a`，`latest.json` `be89460f87ccb5508e4741f787f8a0108eb03d13ee6b2d2deaac2e1ae52fc7e2`。
+- 发布资产 SHA-256：DMG `bfc15bbb17dc6fabfd5c2760e2d090b859b1f21a0472638d3616e3efbb19aaa6`，macOS updater 归档 `2f9d4733df7b6ae7abf28a4c471a04dfd4c9299419fa19c98b94a6166fe38a1b`，macOS 签名 `d2baa02e5c4814d0cb52ac163495cd796e802e8d6387099c0c60e89b3af5f3e9`，Windows 安装包 `5e3858b8dbd88e43be2967f723a5ebffb68aa7199d71276d0aac13212038b2d4`，Windows 签名 `fd1cbaae0e2f4341f8e38107943251bafcb56d41ee91ee44be28ce75d1f5874a`，`latest.json` `47de46e6a37055a68ce247203a2dea795f7da2051a2aae3fecad4056f959ee87`。
 - `release.yml` 已调整为单平台失败不阻断另一平台上传，并要求至少一个 bundle job 成功；重跑时产物名带 `github.run_attempt` 以避免覆盖。启动后自动检查和 24 小时节流仍未实现。
 
 ## 2026-11-28 v1.0.1 发布与验证
@@ -73,7 +81,7 @@ GitHub 对 Node 20 runner 的兼容警告通过升级 `actions/checkout@v7`、
 - 从 `v1.0.1` Release 验证公开端点：`releases/latest/download/latest.json` 返回版本 `1.0.1`，包含 `darwin-aarch64`、`darwin-x86_64` 和 `windows-x86_64` 三个平台；DMG、macOS updater 归档、Windows 安装包和 `SHA256SUMS.txt` 的下载路径均返回 HTTP 200。
 - Release 正文已改为 `release-notes/v1.0.1.md` 的规范内容，误附的 `user-attachments` 链接已移除；页面上 7 个发布文件的 GitHub 摘要与 `SHA256SUMS.txt` 一致。
 - 当前 macOS 包为 ad-hoc 签名、未公证；Windows 包未做 Authenticode 签名。CI 中 Windows bundle job 曾失败，本次 Windows installer 来自此前成功产物并已用当前版本密钥重新签名。
-- 本地 `1.0.0 → 1.0.1` 更新演练已完成；正式版本安装的最终实机复验另见下方验证记录。
+- 本地与公开 Release 的 `1.0.0 → 1.0.1` 更新演练均已完成；公开 Release 的真机复验结果见上方修复记录。
 
 ## 2026-11-28 检查更新方案设计
 
