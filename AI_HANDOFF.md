@@ -42,6 +42,14 @@
 上传与清单 5 分钟，公开下载和真机验收 10–15 分钟。超过 45 分钟时应停止重试，先回到上面
 的预检清单定位阻断点。
 
+### GitHub Actions Node 24 维护
+
+GitHub 对 Node 20 runner 的兼容警告通过升级 `actions/checkout@v7`、
+`actions/setup-node@v7`、`actions/upload-artifact@v7` 和 `pnpm/action-setup@v6` 解决。
+`dtolnay/rust-toolchain@stable`、`Swatinem/rust-cache@v2`、`tauri-apps/tauri-action@v0`
+当前已使用 `node24`。新增 Action 时先检查其 `action.yml` 的 `runs.using`，不要再引入
+`node20` 版本，避免以后从警告升级为硬失败。
+
 ### 本次遗留风险
 
 - Release 的 macOS updater `.app.tar.gz` 内版本仍为 `1.0.0`，不能作为从 `1.0.0` 自动升级到 `1.0.1` 的有效更新包；DMG 安装版已是 `1.0.1`。
