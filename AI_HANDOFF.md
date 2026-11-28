@@ -1,4 +1,13 @@
-# 基金看板桌面版交接
+# FundDesk（基金看板）交接
+
+## 2026-11-28 仓库替换与品牌统一
+
+- GitHub `JazZ301/FundDesk` 的 `main` 已整体替换为当前 Tauri 2 + Rust + React 源码，旧的 Swift `Package.swift`、`Sources/`、`Tests/`、脚本和文档均已移除；替换提交为 `a9786d2537c72f19148954825d953e4f1eda7e5d`，最终源码树与本地提交 `f6a9684` 完全一致。
+- 为绕过本机缺少 GitHub CLI 凭证，使用一次性 GitHub Actions 工作流从上传快照提交替换树；临时 `snapshot.tar.gz` 和 `replace.yml` 已从仓库删除，跨平台构建工作流 `build.yml` 已恢复。
+- 品牌统一为英文名 **FundDesk**、中文名「基金看板」。Tauri `productName`、窗口标题、托盘 tooltip、Cargo 描述、前端标题、README、使用指南和打包脚本均已更新；bundle identifier 仍为 `app.funddesk.desktop`，数据目录仍为 `FundDeskDesktop`，不影响现有持仓数据。
+- 验证：`pnpm build`、`cargo check -p funddesk --features custom-protocol` 通过；macOS universal App/DMG 重建，ad-hoc 签名和镜像校验通过。DMG 为 `release/基金看板_1.0.0_universal.dmg`，SHA-256 `c2242b623a319983fac79a342df2663baacf27fa3c0697f05ecf09b31b70ab80`。
+- 安装到 `/Applications/基金看板.app` 后启动成功，窗口标题、侧栏和菜单栏均显示「基金看板」，使用正式数据目录加载 17 只自选和指数行情。旧的 `/Applications/基金看板桌面版.app` 仍保留，未自动删除。
+- 待办：Windows x64 NSIS 仍为旧「基金看板桌面版」名称，需要在 Windows 环境重新打包；GitHub 上的 `v0.3.28`、`v0.3.29` 仍是旧 Swift 版 Release，尚未删除或替换。
 
 ## 2026-11-28 美股指数分时数据源恢复
 
