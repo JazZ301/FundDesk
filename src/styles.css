@@ -838,6 +838,10 @@ select {
 }
 
 .row-context-menu button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
   width: 100%;
   border: 0;
   border-radius: 5px;
@@ -848,8 +852,30 @@ select {
   cursor: pointer;
 }
 
+.row-context-menu button.checked {
+  color: var(--brand-strong);
+}
+
 .row-context-menu button:hover {
   background: var(--brand-soft);
+}
+
+.row-context-menu .context-menu-label {
+  margin: 5px 9px 3px;
+  color: var(--muted);
+  font-size: 9.5px;
+  letter-spacing: 0.04em;
+}
+
+.row-context-menu .context-menu-check {
+  color: var(--brand-strong);
+  font-size: 10px;
+}
+
+.row-context-menu .context-menu-separator {
+  height: 1px;
+  margin: 4px 5px;
+  background: var(--line);
 }
 
 .row-context-menu .danger-text {
@@ -1988,7 +2014,7 @@ select {
   }
 }
 
-.plugin-transfer .section-actions {
+.holdings-transfer .section-actions {
   margin-top: 8px;
 }
 
@@ -2028,7 +2054,6 @@ select {
   height: 19px;
 }
 
-.sidebar-transfer,
 .topbar-actions button,
 .table-toolbar .ghost,
 .summary-card > span,
@@ -2036,23 +2061,6 @@ select {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-}
-
-.sidebar-transfer {
-  align-self: stretch;
-  margin-top: auto;
-  padding: 9px 6px 2px;
-  border: 0;
-  border-top: 1px solid var(--line);
-  background: transparent;
-  color: var(--brand-strong);
-  font-weight: 600;
-  cursor: pointer;
-  text-align: left;
-}
-
-.sidebar-transfer:hover {
-  color: var(--brand);
 }
 
 .page-heading {
@@ -2387,11 +2395,26 @@ select {
   font-size: 12.5px;
   font-weight: 600;
   line-height: 1;
-  cursor: pointer;
+  cursor: grab;
+  user-select: none;
+  touch-action: none;
 }
 
 .detail-tabs.swift-tabs button:first-child {
   border-left: 0;
+}
+
+.detail-tabs.swift-tabs button:active {
+  cursor: grabbing;
+}
+
+.detail-tabs.swift-tabs button.dragging {
+  opacity: 0.55;
+}
+
+.detail-tabs.swift-tabs button.drop-target {
+  background: var(--brand-soft);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--brand) 55%, transparent);
 }
 
 .detail-tabs.swift-tabs button.active {
@@ -2748,6 +2771,32 @@ select {
   border-radius: 9px;
   background: var(--panel);
   padding: 9px 13px 8px;
+}
+
+.position-precision-note {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 10px;
+  margin: 9px 0 0;
+  padding: 7px 10px;
+  border: 1px solid color-mix(in srgb, var(--warning) 34%, var(--line));
+  border-inline-start: 3px solid var(--warning);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--warning) 10%, var(--panel));
+  color: var(--ink);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.position-precision-note strong {
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.position-precision-note span {
+  flex: 1 1 400px;
+  min-width: 0;
 }
 
 .position-head {
@@ -3261,6 +3310,35 @@ select {
   line-height: 1.65;
 }
 
+.source-config-help {
+  margin-top: 12px;
+  border-color: color-mix(in srgb, var(--brand) 32%, var(--line));
+  background: color-mix(in srgb, var(--brand) 9%, var(--panel));
+}
+
+.source-config-help h3 {
+  font-size: 15px;
+}
+
+.source-config-copy {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin-top: 10px;
+}
+
+.source-config-copy button strong {
+  font-size: 15px;
+  margin-right: 6px;
+}
+
+.source-config-copy [role="status"] {
+  color: var(--brand-strong);
+  font-size: 12px;
+  font-weight: 650;
+}
+
 .settings-segmented {
   margin-top: 9px;
   height: 31px;
@@ -3603,6 +3681,10 @@ select {
   overflow: auto;
   border-radius: 12px;
   background: linear-gradient(145deg, var(--detail-canvas-top, #f7f8fd), var(--detail-canvas-bottom, #eff3fa));
+}
+
+.settings-card .holdings-transfer .error {
+  color: var(--up);
 }
 
 .data-source-modal {
@@ -4606,4 +4688,29 @@ select {
   margin: 9px 0 0;
   color: var(--muted);
   font-size: 11px;
+}
+
+.holdings-import-preview {
+  max-height: 210px;
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+
+.holdings-import-preview table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.holdings-import-preview th,
+.holdings-import-preview td {
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+}
+
+.holdings-import-preview th {
+  position: sticky;
+  top: 0;
+  background: var(--panel-raised);
 }

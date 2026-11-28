@@ -5,14 +5,13 @@ on:
     tags: ["v*"]
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   meta:
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.meta.outputs.version }}
-      body: ${{ steps.meta.outputs.body }}
     steps:
       - uses: actions/checkout@v7
       - id: meta
@@ -23,18 +22,8 @@ jobs:
             echo "::error::tag ${GITHUB_REF_NAME} does not match tauri.conf.json version ${version}"
             exit 1
           fi
-          notes="release-notes/v${version}.md"
-          if [ -f "$notes" ]; then
-            body=$(cat "$notes")
-          else
-            body="FundDesk（基金看板）v${version}。完整变更请查看提交记录。"
-          fi
-          {
-            echo "version=${version}"
-            echo "body<<RELEASE_BODY_EOF"
-            echo "$body"
-            echo "RELEASE_BODY_EOF"
-          } >> "$GITHUB_OUTPUT"
+          test -s "release-notes/v${version}.md"
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
 
   test-core:
     runs-on: ubuntu-latest
@@ -56,7 +45,6 @@ jobs:
           - os: windows-latest
             target: x86_64-pc-windows-msvc
             artifact: Windows
-    continue-on-error: true
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v7
@@ -116,69 +104,55 @@ jobs:
           } | ConvertTo-Json -Depth 5 -Compress
           Set-Content -Path tauri.signing.conf.json -Value $config -Encoding utf8
           "TAURI_EXTRA_ARGS=--config $env:GITHUB_WORKSPACE\tauri.signing.conf.json" >> $env:GITHUB_ENV
-      - uses: tauri-apps/tauri-action@v0
+      - name: Build signed updater bundles
+        shell: bash
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TARGET: ${{ matrix.target }}
+          BUNDLES: ${{ matrix.artifact == 'macOS' && 'app,dmg' || 'nsis' }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD || '' }}
-        with:
-          args: --target ${{ matrix.target }} ${{ env.TAURI_EXTRA_ARGS }}
-      - name: Prepare mirrored update manifest
-        if: matrix.os == 'macos-15'
-        shell: bash
         run: |
-          version=$(node -p "require('./src-tauri/tauri.conf.json').version")
-          latest="target/universal-apple-darwin/release/bundle/latest.json"
-          if [ ! -f "$latest" ]; then
-            echo "::error::tauri-action did not generate $latest" >&2
-            exit 1
+          args=()
+          if [[ -n "${TAURI_EXTRA_ARGS:-}" ]]; then
+            args=(--config "$GITHUB_WORKSPACE/tauri.signing.conf.json")
           fi
-          cp "$latest" "latest.json"
-          node - "$version" <<'NODE'
-          const fs = require('fs');
-          const version = process.argv[2];
-          const data = JSON.parse(fs.readFileSync('latest.json', 'utf8'));
-          for (const platform of Object.values(data.platforms ?? {})) {
-            if (typeof platform.url !== 'string') continue;
-            platform.url = platform.url.replace(
-              'https://github.com/',
-              'https://ghfast.top/github.com/'
-            );
-          }
-          fs.writeFileSync(`latest-cn-${version}.json`, JSON.stringify(data, null, 2) + '\n');
-          NODE
-
-      - name: Upload release bundles
-        uses: actions/upload-artifact@v7
-        id: upload-bundles
+          pnpm tauri build --target "$TARGET" --bundles "$BUNDLES" "${args[@]}"
+      - uses: actions/upload-artifact@v7
         with:
           name: release-${{ matrix.artifact }}-${{ github.run_attempt }}
           path: |
             target/**/bundle/dmg/*.dmg
             target/**/bundle/macos/*.app.tar.gz
             target/**/bundle/macos/*.app.tar.gz.sig
-            target/**/bundle/nsis/*.exe
-            target/**/bundle/nsis/*.exe.sig
-            target/**/bundle/msi/*.msi
-            target/**/bundle/msi/*.msi.sig
-            target/**/bundle/msi/*.msi.zip
-            target/**/bundle/msi/*.msi.zip.sig
-            latest.json
-            latest-cn-*.json
+            target/**/bundle/nsis/*-setup.exe
+            target/**/bundle/nsis/*-setup.exe.sig
           if-no-files-found: error
 
-  require-bundles:
-    needs: bundle
-    if: always()
+  publish:
+    needs: [meta, bundle]
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
-      - name: Require at least one bundle job to succeed
-        shell: bash
+      - uses: actions/checkout@v7
+      - uses: actions/download-artifact@v7
+        with:
+          pattern: release-*-${{ github.run_attempt }}
+          path: bundles
+      - name: Prepare and publish release
         env:
-          BUNDLE_RESULT: ${{ needs.bundle.result }}
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_VERSION: ${{ needs.meta.outputs.version }}
         run: |
-          echo "bundle matrix result: ${BUNDLE_RESULT}"
-          if [ "${BUNDLE_RESULT}" != "success" ]; then
-            echo "::error::All bundle jobs failed"
-            exit 1
+          notes="release-notes/${GITHUB_REF_NAME}.md"
+          python3 scripts/prepare-release.py "$RELEASE_VERSION" "$GITHUB_REPOSITORY" bundles publish "$notes"
+          if gh release view "$GITHUB_REF_NAME" --json isDraft --jq .isDraft > release-state; then
+            if [[ "$(cat release-state)" != true ]]; then
+              echo "::error::Release already published"
+              exit 1
+            fi
+            gh release upload "$GITHUB_REF_NAME" publish/* --clobber
+          else
+            gh release create "$GITHUB_REF_NAME" publish/* --draft --verify-tag --title "基金看板 $GITHUB_REF_NAME" --notes-file "$notes"
           fi
+          gh release edit "$GITHUB_REF_NAME" --draft=false --latest

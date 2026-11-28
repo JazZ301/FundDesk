@@ -16,11 +16,12 @@ import {
 import FundDetail from "./FundDetail";
 import MarketCenter from "./MarketCenter";
 import FuturesView from "./Futures";
-import PluginDataTransfer from "./PluginDataTransfer";
+import HoldingsDataImport from "./HoldingsDataImport";
 import DataSourceDialog from "./DataSource";
 import UpdatePanel from "./UpdatePanel";
 
 type Section = "all" | "holding" | "macd" | "red" | "market" | "futures" | "settings";
+type FundGroup = "macd" | "red";
 type SortKey =
   | "estimateRate"
   | "dayProfit"
@@ -66,6 +67,11 @@ const SECTIONS: { id: Section; label: string }[] = [
   { id: "market", label: "行情中心" },
   { id: "futures", label: "期货" },
   { id: "settings", label: "设置" }
+];
+
+const FUND_GROUPS: { id: FundGroup; label: string }[] = [
+  { id: "macd", label: "MACD 观察" },
+  { id: "red", label: "红利观察" }
 ];
 
 const SORTABLE: { key: SortKey; label: string }[] = [
@@ -427,7 +433,7 @@ function FundTable({
   onError,
   group,
   onRemoveFund,
-  onRemoveGroup
+  onSetGroups
 }: {
   board: BoardView;
   rows: FundRow[];
@@ -441,7 +447,7 @@ function FundTable({
   onError: (message: string) => void;
   group: "macd" | "red" | null;
   onRemoveFund: (row: FundRow) => void;
-  onRemoveGroup: (row: FundRow, group: "macd" | "red") => void;
+  onSetGroups: (row: FundRow, groups: FundGroup[]) => void;
 }) {
   const columns = board.visibleColumns;
   const [dragColumn, setDragColumn] = useState<string | null>(null);
@@ -475,6 +481,11 @@ function FundTable({
     setDragCode(null);
     setDropTarget(null);
     onChanged(await api.moveFund(code, target, after, rows.map((row) => row.code)));
+  };
+
+  const toggleGroup = (row: FundRow, group: FundGroup) => {
+    const groups = row.groups.filter((item): item is FundGroup => item === "macd" || item === "red");
+    onSetGroups(row, groups.includes(group) ? groups.filter((item) => item !== group) : [...groups, group]);
   };
 
   return (
@@ -584,16 +595,39 @@ function FundTable({
       {contextMenu && (
         <div
           className="row-context-menu"
+          role="menu"
           style={{ left: contextMenu.x, top: contextMenu.y }}
           onPointerDown={(event) => event.stopPropagation()}
         >
-          <button onClick={() => {
+          <button role="menuitem" onClick={() => {
             onSelect(contextMenu.row.code);
             setContextMenu(null);
           }}>查看基金详情</button>
+          <div className="context-menu-separator" role="separator" />
+          <p className="context-menu-label">分组</p>
+          {FUND_GROUPS.map((item) => {
+            const member = contextMenu.row.groups.includes(item.id);
+            return (
+              <button
+                key={item.id}
+                role="menuitemcheckbox"
+                aria-checked={member}
+                className={member ? "checked" : ""}
+                title={member ? `点击移出${item.label}` : `点击加入${item.label}`}
+                onClick={() => {
+                  toggleGroup(contextMenu.row, item.id);
+                  setContextMenu(null);
+                }}
+              >
+                <span>{item.label}</span>
+                <span className="context-menu-check">{member ? "✓" : ""}</span>
+              </button>
+            );
+          })}
+          <div className="context-menu-separator" role="separator" />
           {group ? (
             <button className="danger-text" onClick={() => {
-              onRemoveGroup(contextMenu.row, group);
+              toggleGroup(contextMenu.row, group);
               setContextMenu(null);
             }}>
               移出{group === "macd" ? "MACD 观察" : "红利观察"}
@@ -611,7 +645,7 @@ function FundTable({
 }
 
 const SETTINGS_TABS: {
-  id: "appearance" | "refresh" | "menuBar" | "sources" | "about" | "disclaimer";
+  id: "appearance" | "refresh" | "menuBar" | "sources" | "transfer" | "about" | "disclaimer";
   label: string;
   hint: string;
   icon: keyof typeof ICONS;
@@ -620,11 +654,49 @@ const SETTINGS_TABS: {
   { id: "refresh", label: "刷新间隔", hint: "自动检查", icon: "timer" },
   { id: "menuBar", label: "菜单栏", hint: "上证与收益", icon: "menuBar" },
   { id: "sources", label: "数据源", hint: "接口配置", icon: "wifi" },
+  { id: "transfer", label: "批量导入持仓", hint: "AI 模板与文本", icon: "transfer" },
   { id: "about", label: "关于", hint: "版本与更新", icon: "info" },
   { id: "disclaimer", label: "免责声明", hint: "使用风险", icon: "shield" }
 ];
 
 type SettingsTab = (typeof SETTINGS_TABS)[number]["id"];
+
+function SourceConfigHelp() {
+  const wechatId = "He110-w0rld";
+  const [copyMessage, setCopyMessage] = useState("");
+  const [copying, setCopying] = useState(false);
+
+  async function copyWechatId() {
+    setCopying(true);
+    setCopyMessage("");
+    try {
+      await navigator.clipboard.writeText(wechatId);
+      setCopyMessage("已复制到剪贴板");
+    } catch {
+      setCopyMessage("复制失败，请在微信中手动搜索该微信号。");
+    } finally {
+      setCopying(false);
+    }
+  }
+
+  return (
+    <section className="settings-card source-config-help">
+      <h3>加微信入群，获取接口配置</h3>
+      <p>在微信中搜索并添加下方微信号。好友申请通过后，我们会邀请你加入微信群，入群后即可获取接口配置。</p>
+      <div className="source-config-copy">
+        <button
+          className="primary"
+          type="button"
+          disabled={copying}
+          onClick={() => void copyWechatId()}
+        >
+          <strong>{wechatId}</strong> <span>点击复制</span>
+        </button>
+        <span role="status">{copyMessage}</span>
+      </div>
+    </section>
+  );
+}
 
 function SettingsDialog({
   board,
@@ -804,17 +876,26 @@ function SettingsDialog({
                 </section>
               )}
               {tab === "sources" && (
-                <section className="settings-card">
-                  <h3><span className="settings-icon"><Icon name="wifi" /></span>数据源</h3>
-                  <p>
-                    {sources.configured
-                      ? `已配置：${sources.label || "自定义配置"}`
-                      : "尚未配置。行情、净值和估算不会加载，需要先导入数据源地址。"}
-                  </p>
-                  <div className="section-actions">
-                    <button className="ghost small" onClick={onOpenSources}>配置数据源</button>
-                    {!sources.configured && <span className="hint">缺少 {sources.missing.length} 项地址</span>}
-                  </div>
+                <>
+                  <section className="settings-card">
+                    <h3><span className="settings-icon"><Icon name="wifi" /></span>数据源</h3>
+                    <p>
+                      {sources.configured
+                        ? `已配置：${sources.label || "自定义配置"}`
+                        : "尚未配置。行情、净值和估算不会加载，需要先导入数据源地址。"}
+                    </p>
+                    <div className="section-actions">
+                      <button className="ghost small" onClick={onOpenSources}>配置数据源</button>
+                      {!sources.configured && <span className="hint">缺少 {sources.missing.length} 项地址</span>}
+                    </div>
+                  </section>
+                  <SourceConfigHelp />
+                </>
+              )}
+              {tab === "transfer" && (
+                <section className="settings-card" aria-labelledby="holdings-import-title">
+                  <h3 id="holdings-import-title"><span className="settings-icon"><Icon name="transfer" /></span>批量导入持仓</h3>
+                  <HoldingsDataImport board={board} onChange={onChange} />
                 </section>
               )}
               {tab === "about" && (
@@ -839,20 +920,6 @@ function SettingsDialog({
   );
 }
 
-function TransferDialog({ onChange, onClose }: { onChange: (view: BoardView) => void; onClose: () => void }) {
-  return (
-    <div className="modal-backdrop" onClick={onClose}>
-      <div className="modal transfer-modal" onClick={(event) => event.stopPropagation()}>
-        <header className="sheet-head">
-          <h2>导入与导出</h2>
-          <button className="sheet-done" onClick={onClose}>完成</button>
-        </header>
-        <PluginDataTransfer onChange={onChange} />
-      </div>
-    </div>
-  );
-}
-
 export default function App() {
   const [board, setBoard] = useState<BoardView | null>(null);
   const [sourcesStatus, setSourcesStatus] = useState<DataSourceStatus | null>(null);
@@ -866,7 +933,6 @@ export default function App() {
   const [detailCode, setDetailCode] = useState<string | null>(null);
   const [addOpen, setAddOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [transferOpen, setTransferOpen] = useState(false);
   const [dataSourceOpen, setDataSourceOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<FundSort | null>(null);
@@ -1043,12 +1109,15 @@ export default function App() {
   const title = SECTIONS.find((item) => item.id === section)?.label ?? "全部自选";
   const detailRow = board && detailCode ? board.rows.find((row) => row.code === detailCode) : undefined;
   const estimateHealth = board?.summary.estimateHealth;
-  const refreshWarning = [
+  const marketClosure = estimateHealth?.marketClosure;
+  const closureMessage = marketClosure === "weekend" ? "A 股周末休市"
+    : marketClosure === "holiday" ? "A 股节假日休市" : "";
+  const refreshWarning = closureMessage ? "" : [
     estimateHealth && estimateHealth.failedCount > 0
       ? `${estimateHealth.failedCount} 只估值刷新失败`
       : "",
     estimateHealth && estimateHealth.staleCount > 0
-      ? `${estimateHealth.staleCount} 只估值已超时`
+      ? `${estimateHealth.staleCount} 只估值已过期`
       : ""
   ].filter(Boolean).join(" · ");
 
@@ -1098,9 +1167,6 @@ export default function App() {
             );
           })}
         </nav>
-        <button className="sidebar-transfer" onClick={() => {
-          setTransferOpen(true);
-        }}><Icon name="transfer" />导入与导出</button>
       </aside>
 
       <main ref={mainRef} className={`main${showBoard && !detailCode ? " board-main" : ""}${section === "market" ? " market-main" : ""}${detailCode ? " detail-main" : ""}`}>
@@ -1180,9 +1246,9 @@ export default function App() {
                 if (!window.confirm(`将从自选中移除 ${row.name} 及本地持仓和流水。`)) return;
                 api.removeFund(row.code).then(updateBoard).catch((reason) => setError(String(reason)));
               }}
-              onRemoveGroup={(row, group) => {
+              onSetGroups={(row, groups) => {
                 api
-                  .setGroups(row.code, row.groups.filter((item) => item !== group))
+                  .setGroups(row.code, groups)
                   .then(updateBoard)
                   .catch((reason) => setError(String(reason)));
               }}
@@ -1190,11 +1256,13 @@ export default function App() {
             <footer className="table-foot">
               <span
                 className={refreshWarning ? "footer-warning" : ""}
-                title={estimateHealth
-                  ? `估值状态：正常 ${estimateHealth.freshCount} 只，超时 ${estimateHealth.staleCount} 只，刷新失败 ${estimateHealth.failedCount} 只，暂无 ${estimateHealth.missingCount} 只`
-                  : undefined}
+                title={closureMessage || (estimateHealth
+                  ? `估值状态：正常 ${estimateHealth.freshCount} 只，过期 ${estimateHealth.staleCount} 只，刷新失败 ${estimateHealth.failedCount} 只，暂无 ${estimateHealth.missingCount} 只`
+                  : undefined)}
               >
-                {refreshWarning
+                {closureMessage
+                  ? <><Icon name="transfer" />{closureMessage} · 显示最近可用数据</>
+                  : refreshWarning
                   ? <><Icon name="wifi" />{refreshWarning} · 保留上次数据</>
                   : <><Icon name="transfer" />最近检查 {board.updatedAt.slice(11, 16)}</>}
               </span>
@@ -1248,9 +1316,6 @@ export default function App() {
           onChange={updateBoard}
           onClose={() => setSettingsOpen(false)}
         />
-      )}
-      {transferOpen && (
-        <TransferDialog onChange={updateBoard} onClose={() => setTransferOpen(false)} />
       )}
       {dataSourceOpen && sourcesStatus && (
         <DataSourceDialog

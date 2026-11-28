@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   api,
   BoardView,
@@ -326,10 +326,19 @@ export default function FundDetail({
   const [showJournal, setShowJournal] = useState(false);
   const [busy, setBusy] = useState(false);
   const [dragTab, setDragTab] = useState<string | null>(null);
+  const [dragOverTab, setDragOverTab] = useState<string | null>(null);
   const [showTarget, setShowTarget] = useState(false);
   const [targetDetail, setTargetDetail] = useState<FundDisclosure | null>(null);
   const [targetLoading, setTargetLoading] = useState(false);
   const [refreshingDisclosure, setRefreshingDisclosure] = useState(false);
+  const dragState = useRef<{
+    item: string;
+    pointerId: number;
+    startX: number;
+    startY: number;
+    active: boolean;
+  } | null>(null);
+  const suppressTabClick = useRef(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -386,6 +395,64 @@ export default function FundDetail({
   const period = tab === "returns" ? returnsPeriod : historyPeriod;
   const setPeriod = tab === "returns" ? setReturnsPeriod : setHistoryPeriod;
   const isMoney = (detail?.kind ?? row?.kind ?? "").includes("货币");
+
+  const detailTabAt = (x: number, y: number) => {
+    const element = document.elementFromPoint(x, y);
+    const tab = element?.closest<HTMLElement>("[data-detail-tab]");
+    return tab?.dataset.detailTab ?? null;
+  };
+
+  const beginTabDrag = (event: React.PointerEvent<HTMLButtonElement>, item: string) => {
+    if (event.button !== 0) return;
+    dragState.current = {
+      item,
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      active: false
+    };
+    event.currentTarget.setPointerCapture(event.pointerId);
+  };
+
+  const updateTabDrag = (event: React.PointerEvent<HTMLButtonElement>) => {
+    const drag = dragState.current;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+    if (!drag.active) {
+      if (Math.hypot(event.clientX - drag.startX, event.clientY - drag.startY) < 4) return;
+      drag.active = true;
+      setDragTab(drag.item);
+    }
+    event.preventDefault();
+    const target = detailTabAt(event.clientX, event.clientY);
+    setDragOverTab(target && target !== drag.item ? target : null);
+  };
+
+  const finishTabDrag = (event: React.PointerEvent<HTMLButtonElement>) => {
+    const drag = dragState.current;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+    dragState.current = null;
+    if (drag.active) {
+      suppressTabClick.current = true;
+      window.setTimeout(() => {
+        suppressTabClick.current = false;
+      }, 0);
+      const target = detailTabAt(event.clientX, event.clientY);
+      if (target && target !== drag.item) {
+        api
+          .moveDetailTab(drag.item, target)
+          .then(onTabsChanged)
+          .catch((reason) => setError(String(reason)));
+      }
+    }
+    setDragTab(null);
+    setDragOverTab(null);
+  };
+
+  const cancelTabDrag = () => {
+    dragState.current = null;
+    setDragTab(null);
+    setDragOverTab(null);
+  };
 
   const visibleNavs = useMemo(() => filterNavs(navs, historyPeriod), [navs, historyPeriod]);
   const navPoints = useMemo(
@@ -613,16 +680,24 @@ export default function FundDetail({
           {availableTabs.map((item) => (
             <button
               key={item}
-              draggable
-              className={tab === item ? "active" : ""}
-              onClick={() => setTab(item)}
-              onDragStart={() => setDragTab(item)}
-              onDragOver={(event) => event.preventDefault()}
-              onDrop={() => {
-                if (!dragTab || dragTab === item) return;
-                api.moveDetailTab(dragTab, item).then(onTabsChanged).catch((reason) => setError(String(reason)));
-                setDragTab(null);
+              data-detail-tab={item}
+              className={[
+                tab === item ? "active" : "",
+                dragTab === item ? "dragging" : "",
+                dragOverTab === item ? "drop-target" : ""
+              ].filter(Boolean).join(" ")}
+              onClick={() => {
+                if (suppressTabClick.current) {
+                  suppressTabClick.current = false;
+                  return;
+                }
+                setTab(item);
               }}
+              onPointerDown={(event) => beginTabDrag(event, item)}
+              onPointerMove={updateTabDrag}
+              onPointerUp={finishTabDrag}
+              onPointerCancel={cancelTabDrag}
+              onLostPointerCapture={cancelTabDrag}
             >
               {DETAIL_TITLES[item] ?? item}
             </button>
@@ -982,6 +1057,12 @@ export default function FundDetail({
               <span>尚未填写持有份额</span>
               <span className="hint">最近净值 {nav?.day ?? "—"}</span>
             </div>
+          )}
+          {!isMoney && (editing || (row?.shares ?? 0) > 0) && (
+            <p className="position-precision-note">
+              <strong>持有收益差异提示</strong>
+              <span>单位成本只显示 4 位小数。即使两边显示的成本价相同，实际计算时保留的小数位数不同，持有收益也可能有差异。</span>
+            </p>
           )}
         </section>
 

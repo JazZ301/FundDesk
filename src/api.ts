@@ -1,4 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
+import type { HoldingsImportRow } from "./holdingsImport";
 
 export type FundRow = {
   code: string;
@@ -25,6 +26,7 @@ export type FundRow = {
 
 export type Exclusion = { reason: string; count: number };
 export type EstimateHealth = {
+  marketClosure: "weekend" | "holiday" | null;
   freshCount: number;
   staleCount: number;
   failedCount: number;
@@ -341,9 +343,9 @@ export type JournalRecord = {
   realized?: number;
 };
 
-type PluginImportResult = {
+type HoldingsImportResult = {
   board: BoardView;
-  report: { added: number; updated: number; unchanged: number; invalid: number; conflicts: number };
+  report: { added: number; updated: number; unchanged: number };
 };
 
 export const api = {
@@ -352,11 +354,10 @@ export const api = {
   saveDataSources: (text: string) => invoke<DataSourceStatus>("save_data_sources", { text }),
   clearDataSources: () => invoke<DataSourceStatus>("clear_data_sources"),
   readDataSourceFile: () => invoke<string | null>("read_data_source_file"),
-  readPluginConfigFile: () => invoke<string | null>("read_plugin_config_file"),
-  exportPluginConfigFile: () => invoke<boolean>("export_plugin_config_file"),
-  exportPluginConfigText: () => invoke<string>("export_plugin_config_text"),
-  importPluginConfig: (text: string, overwrite: boolean) =>
-    invoke<PluginImportResult>("import_plugin_config", { text, overwrite }),
+  readHoldingsImportFile: () => invoke<string | null>("read_holdings_import_file"),
+  saveHoldingsImportTemplate: () => invoke<boolean>("save_holdings_import_template"),
+  importHoldings: (rows: HoldingsImportRow[], overwrite: boolean) =>
+    invoke<HoldingsImportResult>("import_holdings", { rows, overwrite }),
   bootstrap: () => invoke<Bootstrap>("bootstrap"),
   refreshBoard: () => invoke<BoardView>("refresh_board"),
   indices: () => invoke<IndexQuote[]>("indices"),

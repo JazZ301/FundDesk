@@ -36,6 +36,29 @@ pub fn minutes_of_day(date: DateTime<Utc>) -> i64 {
     i64::from(local.hour()) * 60 + i64::from(local.minute())
 }
 
+pub fn estimate_market_closure(date: DateTime<Utc>) -> Option<&'static str> {
+    let local = date.with_timezone(&Shanghai);
+    if local.weekday().num_days_from_monday() >= 5 {
+        return Some("weekend");
+    }
+    // SSE 2026 calendar: https://www.sse.com.cn/disclosure/dealinstruc/closed/c/c_20251222_10802510.shtml
+    if local.year() == 2026
+        && matches!(
+            (local.month(), local.day()),
+            (1, 1..=3)
+                | (2, 15..=23)
+                | (4, 4..=6)
+                | (5, 1..=5)
+                | (6, 19..=21)
+                | (9, 25..=27)
+                | (10, 1..=7)
+        )
+    {
+        return Some("holiday");
+    }
+    None
+}
+
 pub fn can_poll_estimates(date: DateTime<Utc>) -> bool {
     let local = date.with_timezone(&Shanghai);
     let weekday = local.weekday().num_days_from_monday();
@@ -99,6 +122,19 @@ mod tests {
         assert!(can_poll_estimates(at("2026-11-26", "16:15")));
         assert!(!can_poll_estimates(at("2026-11-26", "09:09")));
         assert!(!can_poll_estimates(at("2026-11-28", "10:00")));
+    }
+
+    #[test]
+    fn estimate_market_closure_distinguishes_non_trading_days() {
+        assert_eq!(
+            estimate_market_closure(at("2026-11-28", "10:00")),
+            Some("weekend")
+        );
+        assert_eq!(
+            estimate_market_closure(at("2026-10-07", "10:00")),
+            Some("holiday")
+        );
+        assert_eq!(estimate_market_closure(at("2026-10-08", "08:00")), None);
     }
 
     #[test]

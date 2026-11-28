@@ -1,7 +1,7 @@
 use funddesk_core::board_ops::{FundDetailTab, FundTableColumn, HoldingPlacement};
 use funddesk_core::cache::ResearchCache;
-use funddesk_core::clock::{can_poll_estimates, day};
-use funddesk_core::import::{export_plugin, PluginImport, PluginImportReport};
+use funddesk_core::clock::{can_poll_estimates, day, estimate_market_closure};
+use funddesk_core::import::{HoldingsImport, HoldingsImportReport, HoldingsImportRow};
 use funddesk_core::market::{
     CustomFuturesQuote, FuturesCandle, FuturesFiveSessions, FuturesInstrument, FuturesIntraday,
     FuturesQuote, FuturesSessionPrices, IndexQuote, IndexTrendData, MarketBreadth,
@@ -149,6 +149,7 @@ pub struct ExclusionView {
 #[derive(Clone, Debug, Default, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct EstimateHealthView {
+    pub market_closure: Option<&'static str>,
     pub fresh_count: usize,
     pub stale_count: usize,
     pub failed_count: usize,
@@ -325,6 +326,7 @@ pub fn build_view(
             coverage: to_f64(portfolio.estimated_coverage),
             exclusions,
             estimate_health: EstimateHealthView {
+                market_closure: estimate_market_closure(now),
                 fresh_count: estimate_health.fresh_count,
                 stale_count: estimate_health.stale_count,
                 failed_count: estimate_health.failed_count,
@@ -503,22 +505,17 @@ pub async fn ensure_catalog(state: &AppState) -> Result<Vec<Fund>, String> {
 }
 
 #[derive(Serialize)]
-pub struct PluginImportResult {
+pub struct HoldingsImportResult {
     pub board: BoardView,
-    pub report: PluginImportReport,
+    pub report: HoldingsImportReport,
 }
 
-pub fn export_plugin_config(state: &AppState) -> Result<String, String> {
-    let board = state.board.lock().unwrap();
-    export_plugin(&board.holdings).map_err(|error| format!("导出配置失败：{error}"))
-}
-
-pub async fn import_plugin_config(
+pub async fn import_holdings(
     state: &AppState,
-    text: &str,
+    rows: Vec<HoldingsImportRow>,
     overwrite: bool,
-) -> Result<PluginImportResult, String> {
-    let incoming = PluginImport::parse(text).map_err(|error| error.to_string())?;
+) -> Result<HoldingsImportResult, String> {
+    let incoming = HoldingsImport::from_rows(rows)?;
     let needs_catalog = incoming.needs_catalog(&state.board.lock().unwrap().holdings);
     let catalog = if needs_catalog {
         ensure_catalog(state).await.unwrap_or_default()
@@ -535,7 +532,7 @@ pub async fn import_plugin_config(
             .map_err(|error| format!("保存导入数据失败：{error}"))?;
         *board = updated;
     }
-    Ok(PluginImportResult {
+    Ok(HoldingsImportResult {
         board: build_view(&board, &state.storage, chrono::Utc::now()),
         report,
     })

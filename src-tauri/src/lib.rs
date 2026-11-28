@@ -152,7 +152,7 @@ fn set_holding(
     Ok(view)
 }
 
-const MAX_PLUGIN_CONFIG_BYTES: u64 = 8 * 1024 * 1024;
+const MAX_IMPORT_FILE_BYTES: u64 = 8 * 1024 * 1024;
 
 #[tauri::command]
 async fn read_data_source_file(window: tauri::WebviewWindow) -> Result<Option<String>, String> {
@@ -172,12 +172,9 @@ async fn read_data_source_file(window: tauri::WebviewWindow) -> Result<Option<St
         let path = file.into_path().map_err(|error| error.to_string())?;
         let mut bytes = Vec::new();
         std::fs::File::open(path)
-            .and_then(|file| {
-                file.take(MAX_PLUGIN_CONFIG_BYTES + 1)
-                    .read_to_end(&mut bytes)
-            })
+            .and_then(|file| file.take(MAX_IMPORT_FILE_BYTES + 1).read_to_end(&mut bytes))
             .map_err(|error| format!("读取数据源配置失败：{error}"))?;
-        if bytes.len() as u64 > MAX_PLUGIN_CONFIG_BYTES {
+        if bytes.len() as u64 > MAX_IMPORT_FILE_BYTES {
             return Err("数据源配置超过 8 MB。".to_string());
         }
         String::from_utf8(bytes)
@@ -189,16 +186,16 @@ async fn read_data_source_file(window: tauri::WebviewWindow) -> Result<Option<St
 }
 
 #[tauri::command]
-async fn read_plugin_config_file(window: tauri::WebviewWindow) -> Result<Option<String>, String> {
+async fn read_holdings_import_file(window: tauri::WebviewWindow) -> Result<Option<String>, String> {
     use std::io::Read;
 
     tauri::async_runtime::spawn_blocking(move || {
         let Some(file) = window
             .dialog()
             .file()
-            .add_filter("自选基金助手配置", &["json", "txt"])
             .set_parent(&window)
-            .set_title("选择自选基金助手配置文件")
+            .add_filter("持仓文本", &["tsv", "txt"])
+            .set_title("选择持仓文本文件")
             .blocking_pick_file()
         else {
             return Ok(None);
@@ -206,39 +203,36 @@ async fn read_plugin_config_file(window: tauri::WebviewWindow) -> Result<Option<
         let path = file.into_path().map_err(|error| error.to_string())?;
         let mut bytes = Vec::new();
         std::fs::File::open(path)
-            .and_then(|file| {
-                file.take(MAX_PLUGIN_CONFIG_BYTES + 1)
-                    .read_to_end(&mut bytes)
-            })
-            .map_err(|error| format!("读取配置文件失败：{error}"))?;
-        if bytes.len() as u64 > MAX_PLUGIN_CONFIG_BYTES {
-            return Err("配置文件超过 8 MB。".to_string());
+            .and_then(|file| file.take(MAX_IMPORT_FILE_BYTES + 1).read_to_end(&mut bytes))
+            .map_err(|error| format!("读取持仓文件失败：{error}"))?;
+        if bytes.len() as u64 > MAX_IMPORT_FILE_BYTES {
+            return Err("持仓文件超过 8 MB。".to_string());
         }
         String::from_utf8(bytes)
             .map(Some)
-            .map_err(|_| "请选择 UTF-8 编码的配置文件。".to_string())
+            .map_err(|_| "请选择 UTF-8 编码的持仓文件。".to_string())
     })
     .await
     .map_err(|error| error.to_string())?
 }
 
 #[tauri::command]
-async fn export_plugin_config_file(window: tauri::WebviewWindow) -> Result<bool, String> {
+async fn save_holdings_import_template(window: tauri::WebviewWindow) -> Result<bool, String> {
     tauri::async_runtime::spawn_blocking(move || {
-        let text = service::export_plugin_config(&window.state::<AppState>())?;
         let Some(file) = window
             .dialog()
             .file()
-            .add_filter("JSON 配置文件", &["json"])
+            .add_filter("文本文件", &["txt"])
             .set_parent(&window)
-            .set_file_name("自选基金助手配置文件.json")
-            .set_title("导出自选基金助手配置文件")
+            .set_file_name("基金看板-AI持仓导入模板.txt")
+            .set_title("保存 AI 持仓导入模板")
             .blocking_save_file()
         else {
             return Ok(false);
         };
         let path = file.into_path().map_err(|error| error.to_string())?;
-        std::fs::write(path, text).map_err(|error| format!("写入配置文件失败：{error}"))?;
+        std::fs::write(path, include_str!("../../src/holdings-import-template.txt"))
+            .map_err(|error| format!("保存持仓模板失败：{error}"))?;
         Ok(true)
     })
     .await
@@ -246,20 +240,12 @@ async fn export_plugin_config_file(window: tauri::WebviewWindow) -> Result<bool,
 }
 
 #[tauri::command]
-fn export_plugin_config_text(state: State<'_, AppState>) -> Result<String, String> {
-    service::export_plugin_config(&state)
-}
-
-#[tauri::command]
-async fn import_plugin_config(
+async fn import_holdings(
     app: AppHandle,
-    text: String,
+    rows: Vec<funddesk_core::import::HoldingsImportRow>,
     overwrite: bool,
-) -> Result<service::PluginImportResult, String> {
-    if text.len() as u64 > MAX_PLUGIN_CONFIG_BYTES {
-        return Err("配置文本超过 8 MB。".to_string());
-    }
-    let result = service::import_plugin_config(&app.state::<AppState>(), &text, overwrite).await?;
+) -> Result<service::HoldingsImportResult, String> {
+    let result = service::import_holdings(&app.state::<AppState>(), rows, overwrite).await?;
     let _ = app.emit("board://updated", &result.board);
     Ok(result)
 }
@@ -703,10 +689,9 @@ pub fn run() {
             add_fund,
             remove_fund,
             set_holding,
-            read_plugin_config_file,
-            export_plugin_config_file,
-            export_plugin_config_text,
-            import_plugin_config,
+            read_holdings_import_file,
+            save_holdings_import_template,
+            import_holdings,
             save_settings,
             save_menu_bar,
             save_visible_columns,

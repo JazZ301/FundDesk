@@ -1,19 +1,14 @@
 use crate::backup::{BackupError, BoardBackup};
 use crate::csv;
-use crate::model::{Fund, FundGroup, FundObservation, Holding, PositionRecord};
+use crate::model::{Fund, FundObservation, Holding, PositionRecord};
 use rust_decimal::Decimal;
-use serde::Serialize;
-use serde_json::{json, Value};
+use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 
 #[derive(Debug, thiserror::Error)]
 pub enum ImportError {
-    #[error("无法识别配置文件。请选择 JSON 备份、原插件配置或含基金代码列的 CSV。")]
+    #[error("无法识别配置文件。请选择 JSON 备份或含基金代码列的 CSV。")]
     Invalid,
-    #[error("无法读取自选基金助手配置，请选择或粘贴插件导出的 JSON。")]
-    InvalidPlugin,
-    #[error("配置中没有可导入的基金。")]
-    EmptyPlugin,
     #[error("{0}")]
     Backup(#[from] BackupError),
 }
@@ -42,15 +37,6 @@ impl ImportPreview {
             journals = backup.board.journals.clone().unwrap_or_default();
             observations = backup.board.observations.clone().unwrap_or_default();
             backup.board.holdings
-        } else if let Ok(json) = serde_json::from_slice::<Value>(data) {
-            if json.get("fundListGroup").is_some()
-                || json.get("fundListM").is_some()
-                || json.get("fundList").is_some()
-            {
-                plugin_rows(&json, &by_code, &mut invalid)
-            } else {
-                return Err(ImportError::Invalid);
-            }
         } else {
             let (holdings, invalid_count) =
                 csv::parse(data, &by_code).map_err(|_| ImportError::Invalid)?;
@@ -92,59 +78,70 @@ impl ImportPreview {
     }
 }
 
+#[derive(Deserialize)]
+pub struct HoldingsImportRow {
+    code: String,
+    name: Option<String>,
+    shares: Option<String>,
+    cost: Option<String>,
+}
+
 #[derive(Debug)]
-pub struct PluginImport {
+pub struct HoldingsImport {
     holdings: Vec<Holding>,
-    report: PluginImportReport,
 }
 
 #[derive(Debug, Default, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct PluginImportReport {
+pub struct HoldingsImportReport {
     added: usize,
     updated: usize,
     unchanged: usize,
-    invalid: usize,
-    conflicts: usize,
 }
 
-impl PluginImport {
-    pub fn parse(text: &str) -> Result<Self, ImportError> {
-        let json: Value = serde_json::from_str(text.trim_start_matches('\u{feff}').trim())
-            .map_err(|_| ImportError::InvalidPlugin)?;
-        if !["fundListGroup", "fundListM", "fundList"]
-            .iter()
-            .any(|key| json.get(key).is_some_and(Value::is_array))
-        {
-            return Err(ImportError::InvalidPlugin);
+impl HoldingsImport {
+    pub fn from_rows(rows: Vec<HoldingsImportRow>) -> Result<Self, String> {
+        if rows.is_empty() {
+            return Err("没有可导入的基金。".to_string());
         }
 
-        let mut report = PluginImportReport::default();
-        let rows = plugin_rows(&json, &HashMap::new(), &mut report.invalid);
-        let mut holdings: Vec<Holding> = Vec::new();
-        let mut indices = HashMap::new();
-        let mut conflicts = HashSet::new();
+        let mut seen = HashSet::new();
+        let mut holdings = Vec::with_capacity(rows.len());
         for row in rows {
-            let index = indices.entry(row.id().to_owned()).or_insert(holdings.len());
-            if let Some(previous) = holdings.get_mut(*index) {
-                let conflict = merge_duplicate(&mut previous.shares, row.shares)
-                    | merge_duplicate(&mut previous.cost_per_share, row.cost_per_share);
-                if conflict {
-                    conflicts.insert(row.id().to_owned());
-                }
-                merge_groups(previous, &row);
-                if previous.fund.name == previous.fund.code {
-                    previous.fund.name = row.fund.name;
-                }
-            } else {
-                holdings.push(row);
+            let code = row.code;
+            if !Fund::valid_code(&code) {
+                return Err("基金代码须为六位数字。".to_string());
             }
+            if !seen.insert(code.clone()) {
+                return Err(format!("基金代码 {code} 重复。"));
+            }
+            let shares = import_decimal(row.shares.as_deref())
+                .map_err(|()| format!("基金 {code} 的份额无效。"))?;
+            let cost = import_decimal(row.cost.as_deref())
+                .map_err(|()| format!("基金 {code} 的每份成本无效。"))?;
+            if cost.is_some_and(|value| value.is_zero()) {
+                return Err(format!("基金 {code} 的每份成本须大于 0。"));
+            }
+            if shares.is_none() && cost.is_none() {
+                return Err(format!("基金 {code} 缺少份额和每份成本。"));
+            }
+
+            holdings.push(Holding {
+                fund: Fund {
+                    name: row
+                        .name
+                        .filter(|name| !name.trim().is_empty())
+                        .unwrap_or_else(|| code.clone()),
+                    code,
+                    kind: String::new(),
+                    initials: String::new(),
+                    pinyin: String::new(),
+                },
+                shares,
+                cost_per_share: cost,
+                groups: None,
+            });
         }
-        if holdings.is_empty() {
-            return Err(ImportError::EmptyPlugin);
-        }
-        report.conflicts = conflicts.len();
-        Ok(Self { holdings, report })
+        Ok(Self { holdings })
     }
 
     pub fn needs_catalog(&self, existing: &[Holding]) -> bool {
@@ -154,11 +151,12 @@ impl PluginImport {
     }
 
     pub fn merge(
-        mut self,
+        self,
         holdings: &mut Vec<Holding>,
         catalog: &[Fund],
         overwrite: bool,
-    ) -> PluginImportReport {
+    ) -> HoldingsImportReport {
+        let mut report = HoldingsImportReport::default();
         let catalog: HashMap<_, _> = catalog
             .iter()
             .map(|fund| (fund.code.as_str(), fund))
@@ -179,245 +177,75 @@ impl PluginImport {
                 {
                     existing.cost_per_share = row.cost_per_share;
                 }
-                merge_groups(existing, &row);
                 if *existing == old {
-                    self.report.unchanged += 1;
+                    report.unchanged += 1;
                 } else {
-                    self.report.updated += 1;
+                    report.updated += 1;
                 }
             } else {
                 if let Some(fund) = catalog.get(row.id()) {
                     row.fund = (*fund).clone();
                 }
                 holdings.push(row);
-                self.report.added += 1;
+                report.added += 1;
             }
         }
-        self.report
+        report
     }
 }
 
-fn merge_groups(existing: &mut Holding, incoming: &Holding) {
-    for group in incoming.group_values() {
-        let groups = existing.groups.get_or_insert_with(Vec::new);
-        if !groups.contains(group) {
-            groups.push(*group);
-        }
-    }
-}
-
-fn merge_duplicate(existing: &mut Option<Decimal>, incoming: Option<Decimal>) -> bool {
-    match (*existing, incoming) {
-        (_, None) => false,
-        (None, Some(value)) => {
-            *existing = Some(value);
-            false
-        }
-        (Some(old), Some(value)) if old.is_zero() && !value.is_zero() => {
-            *existing = Some(value);
-            false
-        }
-        (Some(old), Some(value)) => !value.is_zero() && old != value,
-    }
-}
-
-pub fn export_plugin(holdings: &[Holding]) -> Result<String, serde_json::Error> {
-    let rows = |group: Option<FundGroup>| {
-        holdings.iter().filter(|holding| {
-            Fund::valid_code(holding.id())
-                && group.is_none_or(|group| holding.group_values().contains(&group))
-        }).map(|holding| json!({
-            "code": holding.id(),
-            "name": &holding.fund.name,
-            "num": holding.shares.map(|value| value.to_string()).unwrap_or_default(),
-            "cost": holding.cost_per_share.map(|value| value.to_string()).unwrap_or_default(),
-        })).collect::<Vec<_>>()
-    };
-    let mut groups = vec![json!({ "name": "默认分组", "funds": rows(None) })];
-    for group in [FundGroup::Macd, FundGroup::Red] {
-        let funds = rows(Some(group));
-        if !funds.is_empty() {
-            groups.push(json!({ "name": group.title(), "funds": funds }));
-        }
-    }
-    serde_json::to_string_pretty(&json!({
-        "openGroup": true,
-        "currentGroupIndex": 0,
-        "RealtimeGroupIndex": 0,
-        "fundListGroup": groups,
-        "fundListM": [],
-        "fundList": [],
-    }))
-}
-
-fn plugin_rows(json: &Value, catalog: &HashMap<String, Fund>, invalid: &mut usize) -> Vec<Holding> {
-    let lists = |key| {
-        json.get(key)
-            .and_then(Value::as_array)
-            .into_iter()
-            .flatten()
-    };
-    let grouped = lists("fundListGroup").flat_map(|group| {
-        let group_kind = [FundGroup::Macd, FundGroup::Red]
-            .into_iter()
-            .find(|kind| group.get("name").and_then(Value::as_str) == Some(kind.title()));
-        group
-            .get("funds")
-            .and_then(Value::as_array)
-            .into_iter()
-            .flatten()
-            .map(move |row| (row, group_kind))
-    });
-    let flat = lists("fundListM")
-        .chain(lists("fundList"))
-        .map(|row| (row, None));
-
-    grouped
-        .chain(flat)
-        .filter_map(|(item, group)| {
-            let raw_code = item
-                .get("code")
-                .or_else(|| item.get("fundcode"))
-                .or_else(|| item.get("fundCode"))
-                .unwrap_or(item);
-            let Some(code) = plugin_code(raw_code) else {
-                *invalid += 1;
-                return None;
-            };
-            let shares = plugin_number(item.get("num").or_else(|| item.get("shares")));
-            let cost = plugin_number(item.get("cost").or_else(|| item.get("costPerShare")));
-            if shares.is_err() || cost.is_err() {
-                *invalid += 1;
-                return None;
-            }
-            let supplied_name = item
-                .get("name")
-                .and_then(Value::as_str)
-                .map(str::trim)
-                .filter(|name| !name.is_empty());
-            let fund = catalog.get(&code).cloned().unwrap_or_else(|| Fund {
-                code: code.clone(),
-                name: supplied_name.unwrap_or(&code).to_string(),
-                kind: String::new(),
-                initials: String::new(),
-                pinyin: String::new(),
-            });
-            Some(Holding {
-                fund,
-                shares: shares.unwrap_or_default(),
-                cost_per_share: cost.unwrap_or_default().filter(|value| !value.is_zero()),
-                groups: group.map(|group| vec![group]),
-            })
-        })
-        .collect()
-}
-
-fn plugin_code(value: &Value) -> Option<String> {
-    if let Some(text) = value.as_str() {
-        if Fund::valid_code(text) {
-            return Some(text.to_string());
-        }
-        return None;
-    }
-    let number = value.as_f64()?;
-    if (0.0..1_000_000.0).contains(&number) && number.fract() == 0.0 {
-        return Some(format!("{:06}", number as u32));
-    }
-    None
-}
-
-fn plugin_number(value: Option<&Value>) -> Result<Option<Decimal>, ()> {
-    let text = match value {
-        None | Some(Value::Null) => return Ok(None),
-        Some(Value::String(text)) if text.trim().is_empty() => return Ok(None),
-        Some(Value::String(text)) => text.clone(),
-        Some(Value::Number(number)) => number.to_string(),
-        _ => return Err(()),
-    };
-    csv::decimal(&text)
-        .or_else(|| Decimal::from_scientific(&text).ok())
-        .filter(|value| *value >= Decimal::ZERO)
-        .map(Some)
-        .ok_or(())
+fn import_decimal(text: Option<&str>) -> Result<Option<Decimal>, ()> {
+    text.map(|value| {
+        Decimal::from_str_exact(value)
+            .ok()
+            .filter(|number| *number >= Decimal::ZERO)
+            .ok_or(())
+    })
+    .transpose()
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
-    #[test]
-    fn imports_plugin_json_and_pads_codes() {
-        let json = r#"{"fundListM":[{"code":7339,"num":"10000","cost":"1.5","name":"易方达"}],"fundList":["050025"]}"#;
-        let preview = ImportPreview::parse(json.as_bytes(), &[], &[]).unwrap();
-        assert_eq!(preview.holdings.len(), 2);
-        assert_eq!(preview.holdings[0].id(), "007339");
-        assert_eq!(preview.holdings[1].id(), "050025");
-        assert_eq!(preview.invalid, 0);
+    fn import_rows(json: &str) -> Result<HoldingsImport, String> {
+        HoldingsImport::from_rows(serde_json::from_str(json).unwrap())
     }
 
     #[test]
-    fn roundtrips_stock_plugin_groups_and_exact_decimal_strings() {
-        let config = r#"{
-            "fundListGroup": [
-                {"name":"默认分组","funds":[{"code":"007339","num":0,"cost":""},{"code":"050025","num":"","cost":""}]},
-                {"name":"MACD 观察","funds":[{"code":"007339","num":"123.4567890123456789","cost":1.2345}]},
-                {"name":"另一组","funds":[{"code":"007339","num":"4","cost":"2"},{"code":"bad","num":5}]}
-            ],
-            "fundListM":[{"code":1618,"num":12,"cost":"0.75"}],
-            "userId":"ignored"
-        }"#;
+    fn keeps_existing_fields_and_preserves_blanks_on_overwrite() {
         let mut holdings = Vec::new();
-        let report = PluginImport::parse(&format!("\u{feff}{config}"))
+        import_rows(r#"[{"code":"000001","shares":"8","cost":"1.234567890123456789"}]"#)
             .unwrap()
             .merge(&mut holdings, &[], false);
-        assert_eq!((report.added, report.invalid, report.conflicts), (3, 1, 1));
-        assert_eq!(
-            holdings[0].shares.unwrap().to_string(),
-            "123.4567890123456789"
-        );
-        assert_eq!(holdings[0].group_values(), &[FundGroup::Macd]);
-        assert_eq!(holdings[2].id(), "001618");
+        let rows = r#"[{"code":"000001","shares":"0"}]"#;
 
-        let exported = export_plugin(&holdings).unwrap();
-        let json: Value = serde_json::from_str(&exported).unwrap();
-        assert_eq!(json["fundListM"], json!([]));
-        assert_eq!(
-            json["fundListGroup"][0]["funds"].as_array().unwrap().len(),
-            3
-        );
-        assert!(json.get("userId").is_none());
-        let mut restored = Vec::new();
-        PluginImport::parse(&exported)
-            .unwrap()
-            .merge(&mut restored, &[], false);
-        assert_eq!(restored, holdings);
-    }
-
-    #[test]
-    fn keeps_existing_fields_without_overwrite_and_preserves_blanks_on_overwrite() {
-        let mut holdings = Vec::new();
-        PluginImport::parse(r#"{"fundListM":[{"code":"000001","num":"8","cost":"1.2"}]}"#)
-            .unwrap()
-            .merge(&mut holdings, &[], false);
-        let config =
-            r#"{"fundListM":[{"code":"000001","num":0,"cost":""},{"code":"000002","num":"-1"}]}"#;
-
-        let report = PluginImport::parse(config)
-            .unwrap()
-            .merge(&mut holdings, &[], false);
-        assert_eq!(
-            (report.updated, report.unchanged, report.invalid),
-            (0, 1, 1)
-        );
+        let report = import_rows(rows).unwrap().merge(&mut holdings, &[], false);
+        assert_eq!((report.updated, report.unchanged), (0, 1));
         assert_eq!(holdings[0].shares, Some(Decimal::new(8, 0)));
 
-        let report = PluginImport::parse(config)
-            .unwrap()
-            .merge(&mut holdings, &[], true);
+        let report = import_rows(rows).unwrap().merge(&mut holdings, &[], true);
         assert_eq!(report.updated, 1);
+        assert_eq!(holdings[0].id(), "000001");
         assert_eq!(holdings[0].shares, Some(Decimal::ZERO));
-        assert_eq!(holdings[0].cost_per_share, Some(Decimal::new(12, 1)));
-        assert!(PluginImport::parse(r#"{"showAmount":true}"#).is_err());
+        assert_eq!(
+            holdings[0].cost_per_share.unwrap().to_string(),
+            "1.234567890123456789"
+        );
+    }
+
+    #[test]
+    fn rejects_invalid_or_duplicate_rows() {
+        for rows in [
+            r#"[]"#,
+            r#"[{"code":"1","shares":"1"}]"#,
+            r#"[{"code":"000001","shares":"-1"}]"#,
+            r#"[{"code":"000001","cost":"0"}]"#,
+            r#"[{"code":"000001"}]"#,
+            r#"[{"code":"000001","shares":"1"},{"code":"000001","cost":"1"}]"#,
+        ] {
+            assert!(import_rows(rows).is_err(), "{rows}");
+        }
     }
 
     #[test]
