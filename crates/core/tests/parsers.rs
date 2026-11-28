@@ -2,10 +2,10 @@ use funddesk_core::clock::timestamp;
 use funddesk_core::market::{
     decode_breadth, decode_catalog, decode_custom_futures_quotes, decode_flows,
     decode_futures_daily, decode_futures_five_minutes, decode_futures_intraday,
-    decode_futures_quotes, decode_history, decode_index_daily, decode_indices, decode_search,
-    decode_sectors, decode_sina, decode_sina_breadth, decode_stock_quotes, decode_tencent_daily,
-    index_session, CandlePeriod, FuturesCandle, FuturesInstrument, MarketIndex, SectorCategory,
-    SectorPeriod,
+    decode_futures_quotes, decode_futures_suggest, decode_history, decode_index_daily,
+    decode_indices, decode_search, decode_sectors, decode_sina, decode_sina_breadth,
+    decode_stock_quotes, decode_tencent_daily, index_session, CandlePeriod, FuturesCandle,
+    FuturesInstrument, MarketIndex, SectorCategory, SectorPeriod,
 };
 use funddesk_core::model::Fund;
 use funddesk_core::swift::SwiftDate;
@@ -273,6 +273,24 @@ fn decodes_custom_futures_quotes_from_sina() {
         gas.time.to_utc().unwrap(),
         timestamp("2026-11-26", "22:59:34").unwrap()
     );
+}
+
+#[test]
+fn decodes_foreign_futures_suggestions_from_sina() {
+    let text = concat!(
+        "var suggestvalue=\"纽约原油,86,cl,cl,纽约原油,,纽约原油,99,1,,,,;",
+        "纽约原油2701,86,cl2701,cl2701,纽约原油2701,,纽约原油2701,99,1,,,,;",
+        "黄金,87,au0,au0,黄金,,黄金,99,1,,,,;",
+        "伦镍,86,nid,nid,伦镍,,伦镍,99,1,,,,\""
+    );
+    let suggestions = decode_futures_suggest(&text);
+    assert_eq!(suggestions.len(), 3);
+    assert_eq!(suggestions[0].symbol, "CL");
+    assert_eq!(suggestions[0].title, "纽约原油");
+    assert_eq!(suggestions[1].symbol, "CL2701");
+    assert_eq!(suggestions[2].symbol, "NID");
+    assert_eq!(suggestions[2].title, "伦镍");
+    assert_eq!(suggestions[2].kind, "外盘期货");
 }
 
 #[test]

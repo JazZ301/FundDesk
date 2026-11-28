@@ -89,10 +89,11 @@ function IndexDetail({ code, refreshTick }: { code: string; refreshTick: number 
 }
 
 export default function MarketCenter({
-  indexStrip, selectedIndex, onSelect, onBack, onRefreshIndices, indicesRefreshing
+  indexStrip, selectedIndex, onSelect, onBack, backLabel, onRefreshIndices, indicesRefreshing
 }: {
   indexStrip: ReactNode;
   onBack: () => void;
+  backLabel: string;
   onRefreshIndices: () => Promise<void>;
   indicesRefreshing: boolean;
   selectedIndex: string | null;
@@ -183,7 +184,12 @@ export default function MarketCenter({
   return (
     <div className="market-center">
       <header className="topbar">
-        <h1>行情中心</h1>
+        <div className="page-heading page-heading-back">
+          <button className="detail-back" onClick={onBack}>
+            ‹ {backLabel}
+          </button>
+          <h1>行情中心</h1>
+        </div>
         <div className="section-actions">
           <button className="ghost" onClick={() => {
             setRefreshTick((value) => value + 1);
@@ -191,7 +197,6 @@ export default function MarketCenter({
           }} disabled={loading || indicesRefreshing}>
             {loading || indicesRefreshing ? "刷新中…" : "刷新本页"}
           </button>
-          <button className="ghost" onClick={onBack}>返回基金列表</button>
         </div>
       </header>
       {indexStrip}
@@ -216,10 +221,7 @@ export default function MarketCenter({
         ))}
 
       {focusIndex ? (
-        <>
-          <button className="ghost market-back" onClick={() => onSelect(null)}>‹ 返回行情分类</button>
-          <IndexDetail key={focusIndex} code={focusIndex} refreshTick={refreshTick} />
-        </>
+        <IndexDetail key={focusIndex} code={focusIndex} refreshTick={refreshTick} />
       ) : (
         <>
           {category === "overview" ? (

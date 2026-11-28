@@ -12,6 +12,7 @@ import {
   FuturesDetail as FuturesDetailData,
   FuturesIntraday,
   FuturesQuote,
+  FuturesSuggestion,
   SWIFT_EPOCH,
   swiftDate
 } from "./api";
@@ -307,6 +308,14 @@ function FuturesDetailPanel({
 
   return (
     <div className="futures-detail">
+      <header className="topbar futures-detail-header">
+        <div className="page-heading page-heading-back">
+          <button className="detail-back" onClick={onBack}>‹ 返回期货列表</button>
+          <h1>{data?.title ?? futuresTitle(symbol)}</h1>
+          <p className="subtitle">{symbol} · {quote?.kind ?? futuresKind(symbol)}</p>
+        </div>
+        <p className="subtitle futures-detail-source">新浪财经 · 北京时间</p>
+      </header>
       <section className="panel futures-detail-panel">
         <div className="futures-detail-top">
           <h3>最新报价</h3>
@@ -316,12 +325,6 @@ function FuturesDetailPanel({
               {loading ? "刷新中…" : "⟳ 刷新"}
             </button>
           </div>
-        </div>
-        <div className="futures-detail-title">
-          <button className="ghost small" onClick={onBack}>‹ 返回期货列表</button>
-          <h2>{data?.title ?? futuresTitle(symbol)}</h2>
-          <span>{symbol} · {quote?.kind ?? futuresKind(symbol)}</span>
-          <em>新浪财经 · 北京时间</em>
         </div>
 
         <div className="futures-quote-summary">
@@ -402,6 +405,123 @@ function FuturesDetailPanel({
   );
 }
 
+function AddFuturesModal({
+  existing,
+  onClose,
+  onAdded
+}: {
+  existing: Set<string>;
+  onClose: () => void;
+  onAdded: (quotes: FuturesQuote[]) => void;
+}) {
+  const [keyword, setKeyword] = useState("");
+  const [results, setResults] = useState<FuturesSuggestion[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [adding, setAdding] = useState<string | null>(null);
+  const [error, setError] = useState("");
+  const searchId = useRef(0);
+
+  useEffect(() => {
+    const request = ++searchId.current;
+    const query = keyword.trim();
+    if (!query) {
+      setResults([]);
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    const handle = window.setTimeout(() => {
+      api
+        .searchFutures(query)
+        .then((items) => {
+          if (request === searchId.current) {
+            setResults(items);
+            setError("");
+          }
+        })
+        .catch((reason) => {
+          if (request === searchId.current) {
+            setResults([]);
+            setError(String(reason));
+          }
+        })
+        .finally(() => {
+          if (request === searchId.current) setLoading(false);
+        });
+    }, 250);
+    return () => {
+      window.clearTimeout(handle);
+      if (request === searchId.current) searchId.current += 1;
+    };
+  }, [keyword]);
+
+  const add = async (suggestion: FuturesSuggestion) => {
+    if (adding) return;
+    setAdding(suggestion.symbol);
+    try {
+      const quotes = await api.addFutures(suggestion.symbol, suggestion.title);
+      onAdded(quotes);
+      onClose();
+    } catch (reason) {
+      setError(String(reason));
+    } finally {
+      setAdding(null);
+    }
+  };
+
+  return (
+    <div className="modal-backdrop" onClick={onClose}>
+      <div className="modal add-modal" onClick={(event) => event.stopPropagation()}>
+        <header className="sheet-head">
+          <h2>添加期货</h2>
+          <button className="sheet-done" onClick={onClose}>完成</button>
+        </header>
+        <input
+          autoFocus
+          className="search"
+          placeholder="搜索期货名称、代码或拼音"
+          value={keyword}
+          onChange={(event) => setKeyword(event.target.value)}
+        />
+        {loading && <p className="hint">搜索中…</p>}
+        {error && <p className="error">{error}</p>}
+        {!keyword.trim() && (
+          <div className="search-suggestions">
+            <p className="hint">输入名称、代码或拼音查找外盘期货</p>
+            <div>
+              <button className="ghost small" onClick={() => setKeyword("原油")}>原油</button>
+              <button className="ghost small" onClick={() => setKeyword("黄金")}>黄金</button>
+              <button className="ghost small" onClick={() => setKeyword("伦镍")}>伦镍</button>
+            </div>
+          </div>
+        )}
+        <div className="search-results">
+          {results.map((item) => {
+            const added = existing.has(item.symbol);
+            return (
+              <button
+                key={item.symbol}
+                className="search-row"
+                disabled={added || Boolean(adding)}
+                onClick={() => void add(item)}
+              >
+                <span>
+                  <strong>{item.title}</strong>
+                  <em>{item.symbol} · {item.kind}</em>
+                </span>
+                <b>{added ? "已添加" : adding === item.symbol ? "添加中…" : "添加"}</b>
+              </button>
+            );
+          })}
+          {!loading && keyword.trim() && results.length === 0 && !error && (
+            <p className="hint">没有匹配结果</p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function FuturesView() {
   const [quotes, setQuotes] = useState<FuturesQuote[]>([]);
   const [error, setError] = useState("");
@@ -409,8 +529,7 @@ export default function FuturesView() {
   const [loadedAt, setLoadedAt] = useState("");
   const [order, setOrder] = useState<"default" | "desc" | "asc">("default");
   const [selected, setSelected] = useState<string | null>(null);
-  const [newSymbol, setNewSymbol] = useState("");
-  const [adding, setAdding] = useState(false);
+  const [addOpen, setAddOpen] = useState(false);
   const [refreshAt, setRefreshAt] = useState(0);
   const quoteRequest = useRef(false);
 
@@ -444,21 +563,6 @@ export default function FuturesView() {
   useEffect(() => {
     load();
   }, [load]);
-
-  const addCustom = async () => {
-    const symbol = newSymbol.trim().toUpperCase();
-    if (!symbol || adding) return;
-    setAdding(true);
-    try {
-      setQuotes(await api.addFutures(symbol, ""));
-      setNewSymbol("");
-      setError("");
-    } catch (reason) {
-      setError(String(reason));
-    } finally {
-      setAdding(false);
-    }
-  };
 
   const bySymbol = useMemo(
     () => new Map(quotes.map((quote) => [quote.instrument, quote])),
@@ -496,22 +600,7 @@ export default function FuturesView() {
         <h1>期货</h1>
         <p>新浪财经 · 报价可能延迟 · 北京时间</p>
         <div className="futures-title-actions">
-          <form className="futures-add" onSubmit={(event) => {
-            event.preventDefault();
-            void addCustom();
-          }}>
-            <input
-              value={newSymbol}
-              onChange={(event) => setNewSymbol(event.target.value.toUpperCase())}
-              placeholder="代码，如 NID"
-              aria-label="自选期货代码"
-              title="输入新浪外盘期货代码，例如 NID（LME 镍）"
-              maxLength={12}
-            />
-            <button className="ghost small" type="submit" disabled={adding || !newSymbol.trim()}>
-              {adding ? "添加中…" : "添加自选"}
-            </button>
-          </form>
+          <button className="ghost small" onClick={() => setAddOpen(true)}>＋ 添加自选</button>
           <label htmlFor="futures-order">排序</label>
           <select
             id="futures-order"
@@ -607,6 +696,19 @@ export default function FuturesView() {
           <p className="note">部分报价暂不可用</p>
         )}
       </div>
+      {addOpen && (
+        <AddFuturesModal
+          existing={new Set([
+            ...FUTURES_ORDER,
+            ...quotes.map((quote) => quote.instrument.toUpperCase())
+          ])}
+          onClose={() => setAddOpen(false)}
+          onAdded={(value) => {
+            setQuotes(value);
+            setError("");
+          }}
+        />
+      )}
     </div>
   );
 }

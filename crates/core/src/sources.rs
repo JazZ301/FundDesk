@@ -50,6 +50,7 @@ pub struct EastmoneySources {
 pub struct SinaSources {
     pub finance: String,
     pub hq: String,
+    pub suggest: String,
     pub stock: String,
     pub stock2: String,
     pub vip: String,
@@ -213,6 +214,7 @@ impl Sources {
             ("eastmoney.push2delay", &self.eastmoney.push2delay),
             ("sina.finance", &self.sina.finance),
             ("sina.hq", &self.sina.hq),
+            ("sina.suggest", &self.sina.suggest),
             ("sina.stock", &self.sina.stock),
             ("sina.stock2", &self.sina.stock2),
             ("sina.vip", &self.sina.vip),
@@ -236,6 +238,7 @@ impl Sources {
             &mut self.eastmoney.push2delay,
             &mut self.sina.finance,
             &mut self.sina.hq,
+            &mut self.sina.suggest,
             &mut self.sina.stock,
             &mut self.sina.stock2,
             &mut self.sina.vip,
@@ -343,6 +346,7 @@ mod tests {
                 "sina": {{
                     "finance": "https://example.com/sina-finance",
                     "hq": "https://example.com/sina-hq",
+                    "suggest": "https://example.com/sina-suggest",
                     "stock": "https://example.com/sina-stock",
                     "stock2": "https://example.com/sina-stock2",
                     "vip": "https://example.com/sina-vip"

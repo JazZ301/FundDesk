@@ -303,6 +303,12 @@ export type FuturesQuote = {
   openInterest?: number;
 };
 
+export type FuturesSuggestion = {
+  symbol: string;
+  title: string;
+  kind: string;
+};
+
 export type Candle = {
   day: number;
   open: number;
@@ -374,6 +380,7 @@ export const api = {
   marketCenter: (category: string, period: string) =>
     invoke<MarketCenter>("market_center", { category, period }),
   futuresQuotes: () => invoke<FuturesQuote[]>("futures_quotes"),
+  searchFutures: (keyword: string) => invoke<FuturesSuggestion[]>("search_futures", { keyword }),
   addFutures: (symbol: string, title: string) =>
     invoke<FuturesQuote[]>("add_futures", { symbol, title }),
   removeFutures: (symbol: string) => invoke<FuturesQuote[]>("remove_futures", { symbol }),

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { getVersion } from "@tauri-apps/api/app";
 import { check, type Update } from "@tauri-apps/plugin-updater";
 import { relaunch } from "@tauri-apps/plugin-process";
@@ -12,6 +12,33 @@ type Phase =
   | "installing"
   | "installed"
   | "error";
+
+const CHECK_INTERVAL = 24 * 60 * 60 * 1000;
+const STARTUP_DELAY = 8000;
+
+type UpdateRecord = {
+  checkedAt: number;
+  availableVersion: string | null;
+};
+
+function recordKey(version: string) {
+  return `funddesk:update-check:${version}`;
+}
+
+function readRecord(version: string): UpdateRecord {
+  try {
+    const saved = JSON.parse(localStorage.getItem(recordKey(version)) ?? "null");
+    if (saved && Number.isFinite(saved.checkedAt) && saved.checkedAt > 0) {
+      return {
+        checkedAt: saved.checkedAt,
+        availableVersion: typeof saved.availableVersion === "string" ? saved.availableVersion : null
+      };
+    }
+  } catch {
+    // The current session can still check for updates if local storage is unavailable.
+  }
+  return { checkedAt: 0, availableVersion: null };
+}
 
 const RELEASE_PAGE = "https://github.com/JazZ301/FundDesk/releases";
 
@@ -43,53 +70,92 @@ function errorText(reason: unknown) {
   return text || "检查更新失败，请稍后重试。";
 }
 
-export default function UpdatePanel() {
+export function useAppUpdater() {
   const [version, setVersion] = useState("");
   const [phase, setPhase] = useState<Phase>("idle");
   const [update, setUpdate] = useState<Update | null>(null);
   const [message, setMessage] = useState("");
-  const [checkedAt, setCheckedAt] = useState<Date | null>(null);
+  const [record, setRecord] = useState<UpdateRecord>({ checkedAt: 0, availableVersion: null });
+  const recordRef = useRef(record);
+  const operationInProgress = useRef(false);
+  const firstAutomaticCheck = useRef(Date.now() + STARTUP_DELAY);
   const [totalBytes, setTotalBytes] = useState(0);
   const [receivedBytes, setReceivedBytes] = useState(0);
   const updateRef = useRef<Update | null>(null);
 
   useEffect(() => {
-    void getVersion().then(setVersion).catch(() => setVersion(""));
+    let active = true;
+    void getVersion().then((currentVersion) => {
+      if (!active) return;
+      const saved = readRecord(currentVersion);
+      recordRef.current = saved;
+      setRecord(saved);
+      setVersion(currentVersion);
+    }).catch(() => undefined);
     return () => {
+      active = false;
       void updateRef.current?.close().catch(() => undefined);
     };
   }, []);
 
-  const replaceUpdate = async (next: Update | null) => {
-    if (updateRef.current && updateRef.current !== next) {
-      await updateRef.current.close().catch(() => undefined);
+  const saveRecord = useCallback((next: UpdateRecord) => {
+    recordRef.current = next;
+    setRecord(next);
+    if (version) {
+      try {
+        localStorage.setItem(recordKey(version), JSON.stringify(next));
+      } catch {
+        // Retain the record in memory for this session.
+      }
     }
-    updateRef.current = next;
-    setUpdate(next);
-  };
+  }, [version]);
 
-  const checkNow = async () => {
-    if (phase === "checking" || phase === "downloading" || phase === "installing") return;
+  const checkNow = useCallback(async () => {
+    if (operationInProgress.current || phase === "installed") return;
+    operationInProgress.current = true;
+    const checkedAt = Date.now();
+    saveRecord({ ...recordRef.current, checkedAt });
     setPhase("checking");
     setMessage("");
-    setTotalBytes(0);
-    setReceivedBytes(0);
     try {
-      await replaceUpdate(null);
       const next = await check({ timeout: 15000 });
-      await replaceUpdate(next);
-      setCheckedAt(new Date());
+      void updateRef.current?.close().catch(() => undefined);
+      updateRef.current = next;
+      setUpdate(next);
+      saveRecord({ checkedAt, availableVersion: next?.version ?? null });
       setPhase(next ? "available" : "current");
     } catch (reason) {
-      const text = errorText(reason);
-      setCheckedAt(new Date());
-      setMessage(text);
-      setPhase(text.startsWith("暂时没有") ? "current" : "error");
+      setMessage(errorText(reason));
+      setPhase("error");
+    } finally {
+      operationInProgress.current = false;
     }
-  };
+  }, [phase, saveRecord]);
+
+  useEffect(() => {
+    if (!version || phase === "installed") return;
+    let timer: number;
+    const schedule = () => {
+      window.clearTimeout(timer);
+      const now = Date.now();
+      const lastCheck = recordRef.current.checkedAt;
+      const nextCheck = lastCheck <= now ? lastCheck + CHECK_INTERVAL : now;
+      timer = window.setTimeout(() => void checkNow(), Math.max(0,
+        firstAutomaticCheck.current - now, nextCheck - now));
+    };
+    schedule();
+    window.addEventListener("focus", schedule);
+    document.addEventListener("visibilitychange", schedule);
+    return () => {
+      window.clearTimeout(timer);
+      window.removeEventListener("focus", schedule);
+      document.removeEventListener("visibilitychange", schedule);
+    };
+  }, [version, phase, record.checkedAt, checkNow]);
 
   const install = async () => {
-    if (!update || phase === "downloading" || phase === "installing") return;
+    if (!update || phase === "installed" || operationInProgress.current) return;
+    operationInProgress.current = true;
     setPhase("downloading");
     setMessage("");
     setTotalBytes(0);
@@ -106,12 +172,25 @@ export default function UpdatePanel() {
           setPhase("installing");
         }
       });
+      saveRecord({ ...recordRef.current, availableVersion: null });
       setPhase("installed");
     } catch (reason) {
       setMessage(errorText(reason));
       setPhase("error");
+    } finally {
+      operationInProgress.current = false;
     }
   };
+
+  return {
+    version, phase, update, message, setMessage, record, totalBytes, receivedBytes,
+    checkNow, install
+  };
+}
+
+export default function UpdatePanel({ updater }: { updater: ReturnType<typeof useAppUpdater> }) {
+  const { version, phase, update, message, setMessage, record, totalBytes, receivedBytes,
+    checkNow, install } = updater;
 
   const progress = totalBytes > 0
     ? Math.min(100, Math.round((receivedBytes / totalBytes) * 100))
@@ -126,22 +205,21 @@ export default function UpdatePanel() {
         <div>
           <strong>基金看板 {version || "—"}</strong>
           <small>
-            {checkedAt
-              ? `上次检查 ${checkedAt.toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" })}`
-              : "手动检查新版本"}
+            每 24 小时自动检查
+            {record.checkedAt > 0 && ` · 上次检查 ${new Date(record.checkedAt).toLocaleString("zh-CN", {
+              month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit"
+            })}`}
           </small>
         </div>
-        <button className="ghost small" onClick={() => void checkNow()} disabled={busy}>
+        <button className="ghost small" onClick={() => void checkNow()} disabled={busy || !version || phase === "installed"}>
           {phase === "checking" ? "检查中…" : "检查更新"}
         </button>
       </div>
 
       {phase === "current" && (
-        <p className={message ? "update-status" : "update-status ok"}>
-          {message || "已是最新版本。"}
-        </p>
+        <p className="update-status ok">已是最新版本。</p>
       )}
-      {phase === "available" && update && (
+      {!busy && phase !== "installed" && update && (
         <>
           <p className="update-status">
             发现新版本 <b>{update.version}</b>
@@ -152,6 +230,9 @@ export default function UpdatePanel() {
             <button className="primary small" onClick={() => void install()}>下载并安装</button>
           </div>
         </>
+      )}
+      {!update && record.availableVersion && (
+        <p className="update-status">上次检查发现新版本 <b>{record.availableVersion}</b>。</p>
       )}
       {(phase === "downloading" || phase === "installing") && (
         <div className="update-progress">

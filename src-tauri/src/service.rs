@@ -4,8 +4,9 @@ use funddesk_core::clock::{can_poll_estimates, day, estimate_market_closure};
 use funddesk_core::import::{HoldingsImport, HoldingsImportReport, HoldingsImportRow};
 use funddesk_core::market::{
     CustomFuturesQuote, FuturesCandle, FuturesFiveSessions, FuturesInstrument, FuturesIntraday,
-    FuturesQuote, FuturesSessionPrices, IndexQuote, IndexTrendData, MarketBreadth,
-    MarketFlowSeries, MarketIndex, SectorCategory, SectorFlow, SectorPeriod, StockQuote,
+    FuturesQuote, FuturesSessionPrices, FuturesSuggestion, IndexQuote, IndexTrendData,
+    MarketBreadth, MarketFlowSeries, MarketIndex, SectorCategory, SectorFlow, SectorPeriod,
+    StockQuote,
 };
 use funddesk_core::metrics::{DayProfitExclusion, EstimateHealth, FundMetrics, Portfolio};
 use funddesk_core::model::{
@@ -63,11 +64,16 @@ impl AppState {
             .as_deref()
             .and_then(|path| Sources::load(path).ok())
             .filter(Sources::is_configured);
-        let (sources, source_error) =
+        let (mut sources, source_error) =
             match Sources::load_or_seed(&sources_path, builtin_sources_path.as_deref()) {
                 Ok(sources) => (sources, None),
                 Err(error) => (Sources::default(), Some(error)),
             };
+        if sources.sina.suggest.trim().is_empty() {
+            if let Some(builtin) = &builtin_sources {
+                sources.sina.suggest = builtin.sina.suggest.clone();
+            }
+        }
         Self {
             storage,
             market: MarketClient::with_sources(sources).expect("创建行情客户端"),
@@ -1381,6 +1387,21 @@ pub async fn futures_intraday(state: &AppState, raw: &str) -> Result<FuturesIntr
     state
         .market
         .futures_intraday_raw(raw)
+        .await
+        .map_err(|error| error.to_string())
+}
+
+pub async fn search_futures(
+    state: &AppState,
+    keyword: &str,
+) -> Result<Vec<FuturesSuggestion>, String> {
+    let keyword = keyword.trim();
+    if keyword.is_empty() {
+        return Ok(Vec::new());
+    }
+    state
+        .market
+        .search_futures(keyword)
         .await
         .map_err(|error| error.to_string())
 }

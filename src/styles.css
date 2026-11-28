@@ -265,6 +265,11 @@ select:focus-visible {
   min-width: 0;
 }
 
+.page-heading.page-heading-back {
+  align-items: center;
+  gap: 12px;
+}
+
 .page-heading .subtitle {
   margin: 0;
   white-space: nowrap;
@@ -1529,6 +1534,7 @@ select {
   flex-direction: column;
   gap: 0;
   max-height: 242px;
+  padding-right: 14px;
   overflow: auto;
 }
 
@@ -2227,10 +2233,6 @@ select {
 
 .page-tabs button:hover {
   background: color-mix(in srgb, var(--brand) 6%, transparent);
-}
-
-.market-back {
-  align-self: flex-start;
 }
 
 .index-panel .index-card.active {
@@ -3200,33 +3202,51 @@ select {
   line-height: 1.65;
 }
 
-.source-config-help {
-  margin-top: 12px;
-  border-color: color-mix(in srgb, var(--brand) 32%, var(--line));
-  background: color-mix(in srgb, var(--brand) 9%, var(--panel));
-}
-
-.source-config-help h3 {
-  font-size: 15px;
-}
-
-.source-config-copy {
+.community-contact {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 8px 12px;
-  margin-top: 10px;
+  gap: 14px 20px;
+  margin-top: 14px;
 }
 
-.source-config-copy button strong {
+.community-contact figure {
+  margin: 0;
+  max-width: 100%;
+  text-align: center;
+}
+
+.community-contact img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  background: white;
+}
+
+.community-contact figcaption {
+  margin-top: 7px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.community-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.community-copy button strong {
   font-size: 15px;
   margin-right: 6px;
 }
 
-.source-config-copy [role="status"] {
+.community-copy [role="status"] {
+  min-height: 1.4em;
   color: var(--brand-strong);
   font-size: 12px;
-  font-weight: 650;
 }
 
 .settings-segmented {
@@ -3490,6 +3510,18 @@ select {
   color: var(--muted);
   font-size: 10px !important;
   line-height: 1.55 !important;
+}
+
+button.ghost.update-reminder {
+  background: var(--brand-soft);
+  border-color: color-mix(in srgb, var(--brand) 40%, var(--line));
+  color: var(--brand-strong);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+button.ghost.update-reminder:hover {
+  border-color: var(--brand);
 }
 
 .update-icon {
@@ -3781,19 +3813,6 @@ select {
   width: 195px;
 }
 
-.futures-add {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-
-.futures-add input {
-  width: 104px;
-  height: 26px;
-  padding: 0 8px;
-  font-size: 10.5px;
-}
-
 .futures-panel-head {
   display: flex;
   align-items: center;
@@ -3854,28 +3873,9 @@ select {
   font-size: 10px;
 }
 
-.futures-detail-title {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.futures-detail-title h2 {
+.futures-detail-source {
   margin: 0;
-  font-size: 18px;
-  font-weight: 650;
-}
-
-.futures-detail-title > span {
-  color: var(--muted);
-  font-size: 12px;
-}
-
-.futures-detail-title > em {
-  margin-left: auto;
-  color: var(--muted);
-  font-size: 10px;
-  font-style: normal;
+  white-space: nowrap;
 }
 
 .futures-price-row {

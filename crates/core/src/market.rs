@@ -494,6 +494,14 @@ pub struct CustomFuturesQuote {
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+pub struct FuturesSuggestion {
+    pub symbol: String,
+    pub title: String,
+    pub kind: String,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct FuturesIntraday {
     #[serde(
         default,
@@ -1295,6 +1303,46 @@ pub fn decode_custom_futures_quotes(text: &str, wanted: &[String]) -> Vec<Custom
     }
     quotes.sort_by(|left, right| left.symbol.cmp(&right.symbol));
     quotes
+}
+
+pub fn decode_futures_suggest(text: &str) -> Vec<FuturesSuggestion> {
+    let Some(start) = text.find('"') else {
+        return Vec::new();
+    };
+    let Some(end) = text.rfind('"') else {
+        return Vec::new();
+    };
+    if start >= end {
+        return Vec::new();
+    }
+    let mut suggestions: Vec<FuturesSuggestion> = Vec::new();
+    for entry in text[start + 1..end].split(';') {
+        let fields = entry.split(',').collect::<Vec<_>>();
+        if fields.len() < 7 || fields[1].trim() != "86" {
+            continue;
+        }
+        let symbol = fields[3].trim().to_ascii_uppercase();
+        if symbol.is_empty()
+            || symbol.len() > 12
+            || !symbol.bytes().all(|byte| byte.is_ascii_alphanumeric())
+        {
+            continue;
+        }
+        let title = if fields[6].trim().is_empty() {
+            fields[4].trim()
+        } else {
+            fields[6].trim()
+        };
+        if title.is_empty() || suggestions.iter().any(|item| item.symbol == symbol) {
+            continue;
+        }
+        suggestions.push(FuturesSuggestion {
+            symbol,
+            title: title.to_string(),
+            kind: "外盘期货".to_string(),
+        });
+    }
+    suggestions
 }
 
 pub fn decode_futures_intraday(value: &Value) -> Result<FuturesIntraday, ProviderError> {
@@ -2125,6 +2173,19 @@ impl MarketClient {
             return Err(ProviderError::Missing("期货报价"));
         }
         Ok(quotes)
+    }
+
+    pub async fn search_futures(
+        &self,
+        keyword: &str,
+    ) -> Result<Vec<FuturesSuggestion>, ProviderError> {
+        let sources = self.sources();
+        let url = self.endpoint(&sources.sina.suggest, "sina.suggest", "/suggest/type=86")?;
+        let data = self
+            .fetch(&url, &[("key", keyword)], sina_referer(&sources))
+            .await?;
+        let (text, _, _) = GBK.decode(&data);
+        Ok(decode_futures_suggest(&text))
     }
 
     pub async fn futures_intraday(

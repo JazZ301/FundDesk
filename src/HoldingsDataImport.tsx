@@ -39,7 +39,7 @@ export default function HoldingsDataImport({
 
   return (
     <div className="holdings-transfer">
-      <p className="hint">下载模板，把其中的提示词和已遮住个人信息的持仓截图发给豆包等 AI。将生成的文本导入并逐只核对份额和每份成本。</p>
+      <p className="hint">截取支付宝、天天基金等 App 的基金持仓详情，把截图和模板提示词发给豆包等 AI。导入生成的表格前，核对份额和每份成本。</p>
       <div className="section-actions">
         <button type="button" className="ghost" disabled={busy} onClick={() => void run(async () => {
           if (await api.saveHoldingsImportTemplate()) setNotice("AI 持仓导入模板已保存。");

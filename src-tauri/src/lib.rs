@@ -116,6 +116,14 @@ async fn search_funds(app: AppHandle, keyword: String) -> Result<Vec<Fund>, Stri
 }
 
 #[tauri::command]
+async fn search_futures(
+    state: State<'_, AppState>,
+    keyword: String,
+) -> Result<Vec<funddesk_core::market::FuturesSuggestion>, String> {
+    service::search_futures(&state, &keyword).await
+}
+
+#[tauri::command]
 async fn add_fund(
     app: AppHandle,
     code: String,
@@ -679,6 +687,7 @@ pub fn run() {
             indices,
             index_trend,
             search_funds,
+            search_futures,
             add_fund,
             remove_fund,
             set_holding,

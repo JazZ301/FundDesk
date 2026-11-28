@@ -1,5 +1,5 @@
 import { listen } from "@tauri-apps/api/event";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import {
   api,
   BoardView,
@@ -17,10 +17,12 @@ import FundDetail from "./FundDetail";
 import MarketCenter from "./MarketCenter";
 import FuturesView from "./Futures";
 import HoldingsDataImport from "./HoldingsDataImport";
+import UsageGuide from "./UsageGuide";
 import DataSourceDialog from "./DataSource";
-import UpdatePanel from "./UpdatePanel";
+import UpdatePanel, { useAppUpdater } from "./UpdatePanel";
 import alipayQr from "./assets/support-alipay.jpg";
 import wechatQr from "./assets/support-wechat.jpg";
+import communityWechatQr from "./assets/community-wechat.png";
 
 type Section = "all" | "holding" | "macd" | "red" | "market" | "futures" | "settings";
 type FundGroup = "macd" | "red";
@@ -50,10 +52,12 @@ const ICONS = {
   money: "M22 12a10 10 0 1 1-20 0 10 10 0 0 1 20 0ZM8 7l4 5 4-5m-4 5v5m-3-5h6m-6 3h6",
   wifi: "M2 8.8a15.5 15.5 0 0 1 20 0M5 12.2a11 11 0 0 1 14 0M8.5 15.6a6 6 0 0 1 7 0M12 19h.01M12 3v5",
   info: "M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM12 11v6M12 7h.01",
+  guide: "M12 6C9 4 6 4 3 5v14c3-1 6-1 9 1 3-2 6-2 9-1V5c-3-1-6-1-9 1zm0 0v14M6 8l3 1m-3 3 3 1m6-4 3-1m-3 5 3-1",
   theme: "M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM12 2v20",
   timer: "M12 22a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 9v5l3 2M9 2h6",
   menuBar: "M3 4h18v16H3zM7 8h4v8H7zM14 8h3M14 12h3M14 16h3",
   shield: "M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6l-8-3zM12 8v5M12 16h.01",
+  chat: "M21 11a8 8 0 0 1-8 8H7l-4 2v-6a8 8 0 0 1 8-12h2a8 8 0 0 1 8 8zM8 11h.01M12 11h.01M16 11h.01",
   heart: "M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"
 };
 
@@ -648,7 +652,7 @@ function FundTable({
 }
 
 const SETTINGS_TABS: {
-  id: "appearance" | "refresh" | "menuBar" | "sources" | "transfer" | "support" | "about" | "disclaimer";
+  id: "appearance" | "refresh" | "menuBar" | "sources" | "transfer" | "community" | "support" | "about" | "disclaimer";
   label: string;
   hint: string;
   icon: keyof typeof ICONS;
@@ -658,6 +662,7 @@ const SETTINGS_TABS: {
   { id: "menuBar", label: "菜单栏", hint: "上证与收益", icon: "menuBar" },
   { id: "sources", label: "数据源", hint: "接口配置", icon: "wifi" },
   { id: "transfer", label: "批量导入持仓", hint: "AI 模板与文本", icon: "transfer" },
+  { id: "community", label: "加入社群", hint: "微信与使用反馈", icon: "chat" },
   { id: "support", label: "支持开发", hint: "赞赏与鼓励", icon: "heart" },
   { id: "about", label: "关于", hint: "版本与更新", icon: "info" },
   { id: "disclaimer", label: "免责声明", hint: "使用风险", icon: "shield" }
@@ -665,8 +670,8 @@ const SETTINGS_TABS: {
 
 type SettingsTab = (typeof SETTINGS_TABS)[number]["id"];
 
-function SourceConfigHelp() {
-  const wechatId = "He110-w0rld";
+function CommunitySettings() {
+  const wechatId = "jzq301";
   const [copyMessage, setCopyMessage] = useState("");
   const [copying, setCopying] = useState(false);
 
@@ -684,19 +689,23 @@ function SourceConfigHelp() {
   }
 
   return (
-    <section className="settings-card source-config-help">
-      <h3>加微信群，交流使用反馈</h3>
-      <p>遇到问题或有功能建议，欢迎添加下方微信。好友申请通过后会邀请你进群，方便反馈问题、交流使用体验，也能及时了解版本更新。</p>
-      <div className="source-config-copy">
-        <button
-          className="primary"
-          type="button"
-          disabled={copying}
-          onClick={() => void copyWechatId()}
-        >
-          <strong>{wechatId}</strong> <span>点击复制</span>
-        </button>
-        <span role="status">{copyMessage}</span>
+    <section className="settings-card settings-community">
+      <h3><span className="settings-icon"><Icon name="chat" /></span>加入社群</h3>
+      <p>欢迎交流使用体验、反馈问题和提出功能建议。添加好友后会邀请你进群。</p>
+      <div className="community-contact">
+        <figure>
+          <img src={communityWechatQr} width={168} height={168} alt="微信好友二维码" />
+          <figcaption>用微信扫一扫添加好友</figcaption>
+        </figure>
+        <div>
+          <p>也可以在微信「添加朋友」中搜索微信号。</p>
+          <div className="community-copy">
+            <button className="primary" type="button" disabled={copying} onClick={() => void copyWechatId()}>
+              <strong>{wechatId}</strong> <span>复制微信号</span>
+            </button>
+            <span role="status">{copyMessage}</span>
+          </div>
+        </div>
       </div>
     </section>
   );
@@ -705,6 +714,8 @@ function SourceConfigHelp() {
 function SettingsDialog({
   board,
   sources,
+  initialTab,
+  updater,
   onOpenSources,
   onRestoreSources,
   onChange,
@@ -712,6 +723,8 @@ function SettingsDialog({
 }: {
   board: BoardView;
   sources: DataSourceStatus;
+  initialTab: SettingsTab;
+  updater: ReturnType<typeof useAppUpdater>;
   onOpenSources: () => void;
   onRestoreSources: () => void;
   onChange: (view: BoardView) => void;
@@ -719,7 +732,13 @@ function SettingsDialog({
 }) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
-  const [tab, setTab] = useState<SettingsTab>("appearance");
+  const [tab, setTab] = useState<SettingsTab>(initialTab);
+  const importHeadingRef = useRef<HTMLHeadingElement>(null);
+  const aboutTabRef = useRef<HTMLButtonElement>(null);
+  useLayoutEffect(() => {
+    if (initialTab === "transfer") importHeadingRef.current?.focus();
+    if (initialTab === "about") aboutTabRef.current?.focus();
+  }, [initialTab]);
   const save = async (theme: string, interval: number) => {
     setSaving(true);
     try {
@@ -765,6 +784,7 @@ function SettingsDialog({
               <button
                 key={item.id}
                 type="button"
+                ref={item.id === "about" ? aboutTabRef : undefined}
                 className={tab === item.id ? "active" : ""}
                 aria-current={tab === item.id ? "page" : undefined}
                 onClick={() => {
@@ -882,30 +902,30 @@ function SettingsDialog({
                 </section>
               )}
               {tab === "sources" && (
-                <>
-                  <section className="settings-card">
-                    <h3><span className="settings-icon"><Icon name="wifi" /></span>数据源</h3>
-                    <p>
-                      {sources.configured
-                        ? `当前配置：${sources.label || "自定义配置"}。软件已内置可用接口，可按需替换。`
-                        : sources.defaultAvailable
-                          ? "尚未配置。可以一键恢复安装包内置的接口，或导入自己的配置。"
-                          : "尚未配置。行情、净值和估算不会加载，需要先导入数据源地址。"}
-                    </p>
-                    <div className="section-actions">
-                      <button className="ghost small" onClick={onOpenSources}>配置数据源</button>
-                      {!sources.configured && sources.defaultAvailable && (
-                        <button className="ghost small" onClick={onRestoreSources}>恢复内置默认</button>
-                      )}
-                      {!sources.configured && <span className="hint">缺少 {sources.missing.length} 项地址</span>}
-                    </div>
-                  </section>
-                  <SourceConfigHelp />
-                </>
+                <section className="settings-card">
+                  <h3><span className="settings-icon"><Icon name="wifi" /></span>数据源</h3>
+                  <p>
+                    {sources.configured
+                      ? `当前配置：${sources.label || "自定义配置"}。软件已内置可用接口，可按需替换。`
+                      : sources.defaultAvailable
+                        ? "尚未配置。可以一键恢复安装包内置的接口，或导入自己的配置。"
+                        : "尚未配置。行情、净值和估算不会加载，需要先导入数据源地址。"}
+                  </p>
+                  <div className="section-actions">
+                    <button className="ghost small" onClick={onOpenSources}>配置数据源</button>
+                    {!sources.configured && sources.defaultAvailable && (
+                      <button className="ghost small" onClick={onRestoreSources}>恢复内置默认</button>
+                    )}
+                    {!sources.configured && <span className="hint">缺少 {sources.missing.length} 项地址</span>}
+                  </div>
+                </section>
               )}
+              {tab === "community" && <CommunitySettings />}
               {tab === "transfer" && (
                 <section className="settings-card" aria-labelledby="holdings-import-title">
-                  <h3 id="holdings-import-title"><span className="settings-icon"><Icon name="transfer" /></span>批量导入持仓</h3>
+                  <h3 id="holdings-import-title" tabIndex={-1} ref={importHeadingRef}>
+                    <span className="settings-icon"><Icon name="transfer" /></span>批量导入持仓
+                  </h3>
                   <HoldingsDataImport board={board} onChange={onChange} />
                 </section>
               )}
@@ -940,7 +960,7 @@ function SettingsDialog({
                 </section>
               )}
               {tab === "about" && (
-                <UpdatePanel />
+                <UpdatePanel updater={updater} />
               )}
               {tab === "disclaimer" && (
                 <section className="settings-card settings-disclaimer">
@@ -962,6 +982,8 @@ function SettingsDialog({
 }
 
 export default function App() {
+  const updater = useAppUpdater();
+  const updateReminderRef = useRef<HTMLButtonElement>(null);
   const [board, setBoard] = useState<BoardView | null>(null);
   const [sourcesStatus, setSourcesStatus] = useState<DataSourceStatus | null>(null);
   const [indices, setIndices] = useState<IndexQuote[]>([]);
@@ -971,9 +993,12 @@ export default function App() {
   const [section, setSection] = useState<Section>("all");
   const [returnSection, setReturnSection] = useState<Section>("all");
   const [selectedIndex, setSelectedIndex] = useState<string | null>(null);
+  const [indexOpenedFromBoard, setIndexOpenedFromBoard] = useState(false);
   const [detailCode, setDetailCode] = useState<string | null>(null);
   const [addOpen, setAddOpen] = useState(false);
-  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [settingsTab, setSettingsTab] = useState<SettingsTab | null>(null);
+  const [guideOpen, setGuideOpen] = useState(false);
+  const guideButtonRef = useRef<HTMLButtonElement>(null);
   const [dataSourceOpen, setDataSourceOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<FundSort | null>(null);
@@ -983,33 +1008,63 @@ export default function App() {
   const mainRef = useRef<HTMLElement | null>(null);
   const boardScrollTop = useRef(0);
   const tableScrollTop = useRef(0);
+  const tableScrollLeft = useRef(0);
+  const indexStripScrollLeft = useRef(0);
   const restoreBoardScroll = useRef(false);
 
-  const openFundDetail = useCallback((code: string) => {
-    boardScrollTop.current = mainRef.current?.scrollTop ?? 0;
-    tableScrollTop.current = document.querySelector<HTMLElement>(".table-scroll")?.scrollTop ?? 0;
+  const rememberBoardScroll = useCallback(() => {
+    const main = mainRef.current;
+    const table = main?.querySelector<HTMLElement>(".table-scroll");
+    boardScrollTop.current = main?.scrollTop ?? 0;
+    tableScrollTop.current = table?.scrollTop ?? 0;
+    tableScrollLeft.current = table?.scrollLeft ?? 0;
+    indexStripScrollLeft.current = main?.querySelector<HTMLElement>(".index-strip")?.scrollLeft ?? 0;
     restoreBoardScroll.current = false;
-    setDetailCode(code);
   }, []);
+
+  const openFundDetail = useCallback((code: string) => {
+    rememberBoardScroll();
+    setDetailCode(code);
+  }, [rememberBoardScroll]);
 
   const closeFundDetail = useCallback(() => {
     restoreBoardScroll.current = true;
     setDetailCode(null);
   }, []);
 
-  useEffect(() => {
-    if (detailCode) {
-      if (mainRef.current) mainRef.current.scrollTop = 0;
+  useLayoutEffect(() => {
+    const main = mainRef.current;
+    if (!main) return;
+    if (detailCode || (section === "market" && indexOpenedFromBoard)) {
+      main.scrollTop = 0;
       return;
     }
     if (!restoreBoardScroll.current) return;
     restoreBoardScroll.current = false;
-    requestAnimationFrame(() => {
-      if (mainRef.current) mainRef.current.scrollTop = boardScrollTop.current;
-      const table = document.querySelector<HTMLElement>(".table-scroll");
-      if (table) table.scrollTop = tableScrollTop.current;
-    });
-  }, [detailCode]);
+    main.scrollTop = boardScrollTop.current;
+    const table = main.querySelector<HTMLElement>(".table-scroll");
+    if (table) {
+      table.scrollTop = tableScrollTop.current;
+      table.scrollLeft = tableScrollLeft.current;
+    }
+    const strip = main.querySelector<HTMLElement>(".index-strip");
+    if (strip) strip.scrollLeft = indexStripScrollLeft.current;
+  }, [detailCode, indexOpenedFromBoard, section]);
+
+  const selectMarketIndex = (code: string | null) => {
+    setSelectedIndex(code);
+    if (code === null) setIndexOpenedFromBoard(false);
+  };
+
+  const backFromMarket = () => {
+    if (selectedIndex && !indexOpenedFromBoard) {
+      selectMarketIndex(null);
+      return;
+    }
+    restoreBoardScroll.current = indexOpenedFromBoard;
+    selectMarketIndex(null);
+    setSection(returnSection);
+  };
 
   const updateBoard = useCallback((view: BoardView) => {
     setBoard(view);
@@ -1120,7 +1175,7 @@ export default function App() {
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       const modifier = event.metaKey || event.ctrlKey;
-      if (!modifier) return;
+      if (!modifier || guideOpen) return;
       if (event.key.toLowerCase() === "n") {
         event.preventDefault();
         setAddOpen(true);
@@ -1136,7 +1191,7 @@ export default function App() {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [refresh]);
+  }, [guideOpen, refresh]);
 
   const rows = useMemo(() => {
     if (!board) return [];
@@ -1201,17 +1256,17 @@ export default function App() {
             return (
               <button
                 key={item.id}
-                className={section === item.id || (item.id === "settings" && settingsOpen) ? "active" : ""}
+                className={section === item.id || (item.id === "settings" && settingsTab) ? "active" : ""}
                 aria-current={section === item.id ? "page" : undefined}
                 onClick={() => {
                   setDetailCode(null);
                   if (item.id === "settings") {
-                    setSettingsOpen(true);
+                    setSettingsTab("appearance");
                     return;
                   }
                   if (showBoard) setReturnSection(section);
                   setSection(item.id);
-                  if (item.id === "market") setSelectedIndex(null);
+                  if (item.id === "market") selectMarketIndex(null);
                 }}
               >
                 <Icon name={item.id} />
@@ -1221,6 +1276,12 @@ export default function App() {
             );
           })}
         </nav>
+        <button type="button" className="guide-entry" aria-haspopup="dialog"
+          ref={guideButtonRef} onClick={() => setGuideOpen(true)}>
+          <Icon name="guide" />
+          <span><strong>使用向导</strong><small>快速导入持仓</small></span>
+          <span className="guide-entry-arrow" aria-hidden="true" />
+        </button>
       </aside>
 
       <main ref={mainRef} className={`main${showBoard && !detailCode ? " board-main" : ""}${section === "market" ? " market-main" : ""}${detailCode ? " detail-main" : ""}`}>
@@ -1243,6 +1304,19 @@ export default function App() {
             </p>
           </div>
           <div className="topbar-actions">
+            {showBoard && updater.record.availableVersion && sourcesStatus && (
+              <button
+                type="button"
+                className="ghost update-reminder"
+                ref={updateReminderRef}
+                onClick={() => {
+                  setSettingsTab("about");
+                  if (updater.phase === "idle" && !updater.update) void updater.checkNow();
+                }}
+              >
+                <Icon name="refresh" />有新版本 {updater.record.availableVersion}
+              </button>
+            )}
             {showBoard && (
               <button className="ghost" onClick={() => void refresh()} disabled={refreshing}>
                 <Icon name="refresh" />{refreshing ? "刷新中…" : "刷新"}
@@ -1280,8 +1354,10 @@ export default function App() {
               refreshing={indicesRefreshing}
               onRefresh={() => void refreshIndices()}
               onSelect={(code) => {
+                rememberBoardScroll();
                 setReturnSection(section);
                 setSelectedIndex(code);
+                setIndexOpenedFromBoard(true);
                 setSection("market");
               }}
             />
@@ -1341,15 +1417,18 @@ export default function App() {
         {section === "market" && (
           <MarketCenter
             selectedIndex={selectedIndex}
-            onSelect={setSelectedIndex}
-            onBack={() => setSection(returnSection)}
+            onSelect={selectMarketIndex}
+            onBack={backFromMarket}
+            backLabel={indexOpenedFromBoard
+              ? `返回${SECTIONS.find((item) => item.id === returnSection)?.label ?? "基金列表"}`
+              : selectedIndex ? "返回行情分类" : "返回基金列表"}
             onRefreshIndices={refreshIndices}
             indicesRefreshing={indicesRefreshing}
             indexStrip={
               <IndexStrip indices={indices} checkedAt={indicesCheckedAt}
                 selectedIndex={selectedIndex} onRefresh={() => void refreshIndices()}
                 refreshing={indicesRefreshing}
-                onSelect={(code) => setSelectedIndex(selectedIndex === code ? null : code)} />
+                onSelect={(code) => selectMarketIndex(selectedIndex === code ? null : code)} />
             }
           />
         )}
@@ -1366,17 +1445,35 @@ export default function App() {
           onAdded={fundAdded}
         />
       )}
-      {settingsOpen && sourcesStatus && (
+      {guideOpen && (
+        <UsageGuide
+          onClose={() => {
+            setGuideOpen(false);
+            guideButtonRef.current?.focus();
+          }}
+          onImport={sourcesStatus ? () => {
+            setGuideOpen(false);
+            setSettingsTab("transfer");
+          } : undefined}
+        />
+      )}
+      {settingsTab && sourcesStatus && (
         <SettingsDialog
           board={board}
           sources={sourcesStatus}
+          initialTab={settingsTab}
+          updater={updater}
           onOpenSources={() => {
-            setSettingsOpen(false);
+            setSettingsTab(null);
             setDataSourceOpen(true);
           }}
           onRestoreSources={() => void restoreDefaultSources()}
           onChange={updateBoard}
-          onClose={() => setSettingsOpen(false)}
+          onClose={() => {
+            setSettingsTab(null);
+            if (settingsTab === "transfer") guideButtonRef.current?.focus();
+            if (settingsTab === "about") updateReminderRef.current?.focus();
+          }}
         />
       )}
       {dataSourceOpen && sourcesStatus && (
