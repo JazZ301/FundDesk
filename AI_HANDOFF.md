@@ -1,9 +1,13 @@
 # FundDesk（基金看板）交接
 
-## v1.0.4 发布范围
+## v1.0.4 发布与升级验收
 
-- 版本号同步至前端、Tauri、Cargo 及锁文件。发布说明见 `release-notes/v1.0.4.md`。本次纳入每日检查更新、使用向导、社群设置、返回导航及期货搜索。
-- GitHub Actions 按 `v1.0.4` 构建 macOS universal 与 Windows x64 安装包，并生成签名更新清单。升级验收从含首页更新提醒的本地 1.0.3 构建启动。
+- 发布提交 `6f84ed0` 已推送 `origin/main`，标签 `v1.0.4` 指向该提交。版本号同步至前端、Tauri、Cargo 和锁文件。发布内容见 `release-notes/v1.0.4.md`。
+- [GitHub Actions 发布运行](https://github.com/JazZ301/FundDesk/actions/runs/46161344390) 的元数据、核心测试、macOS universal 与 Windows x64 打包、发布任务全部通过。[v1.0.4](https://github.com/JazZ301/FundDesk/releases/tag/v1.0.4) 已设为 Latest。前端构建、Rust 格式检查及 `cargo test --workspace --locked` 通过，共 83 项通过、3 项忽略。
+- 已下载并核对 9 个上传资产，8 个由 `SHA256SUMS.txt` 列出的文件全部通过校验。三个更新清单均声明 1.0.4，平台 URL 和签名与资产一致。macOS DMG 通过镜像校验，更新归档中的应用版本为 1.0.4。macOS DMG SHA-256 为 `60cd236e6bf5c5882b3d800e4c3ee955e3e4b122cf746f36310180f6a9a3c664`，Windows NSIS 为 `f8af6ddfe777d9ea2f5eb93bdec1feecc9c6084724f982b41369ff6cff460c1e`。
+- macOS 从带提醒的本地 1.0.3 和隔离演示数据启动，实测首页「有新版本 1.0.4」→「设置 → 关于」→「下载并安装」→「立即重启」，重启后的「关于」显示 1.0.4，首页提醒消失。安装后的双架构可执行文件与公开 updater 归档中的文件 SHA-256 一致，App 签名校验通过。验收后已恢复正式数据目录启动。
+- Windows 从同一份带提醒源码打包并安装 1.0.3，在 Parallels Windows 10 ARM64 的 x64 仿真中，使用隔离演示数据验证同样的首页提醒、跳转和应用内安装，重新打开后 exe 与「关于」均显示 1.0.4，PE 架构为 x64。验收后恢复正式数据目录启动。
+- macOS 使用 ad-hoc 签名、未公证；Windows 安装器和 App 未带 Authenticode 签名。两平台应用内更新均通过 updater 签名校验。已验证的安装包和截图分别位于本地 `release/v1.0.4/` 和 `qa/v1.0.4-release/`。
 
 ## 2026-11-28 每日检查软件更新
 
