@@ -1,8 +1,8 @@
 # FundDesk（基金看板）
 
 Windows 10 / macOS 桌面版，Tauri 2 + Rust + React。英文名为 **FundDesk**，中文名为
-「**基金看板**」，bundle identifier 为 `app.funddesk.desktop`，可在 Swift 原生版之外并行安装。
-数据保存在本机，不依赖账号或服务端。
+「**基金看板**」，bundle identifier 为 `app.funddesk.desktop`。与 Swift 原生版标识不同，
+但显示名相同，安装前请退出并移走同名旧应用。数据保存在本机，不依赖账号或服务端。
 
 ![FundDesk 基金看板](docs/guide/screenshots/dashboard.png)
 
