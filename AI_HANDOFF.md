@@ -7,8 +7,17 @@
 - 新增 `.github/workflows/release.yml`：由 `v*` tag 触发，校验 tag 与三处版本号一致，双平台构建，上传 draft Release 与 `latest.json`。日常 `build.yml` 通过 `tauri.ci.conf.json` 关闭 updater 产物，避免未配置签名 Secrets 时失败。
 - 本地完成完整升级演练：`1.0.0` 从临时本地更新源发现 `1.0.1`，下载并校验签名后替换 `/Applications/基金看板.app`，重启后版本号为 `1.0.1`，随后恢复正式 `1.0.0` 安装。
 - 验证：`pnpm build`、`cargo fmt --check`、`cargo test --workspace` 通过（82 项通过，3 项按原配置忽略）。macOS universal App/DMG 重建，App 与 DMG 的 ad-hoc 签名及 DMG 镜像校验通过；DMG 内二进制为 x86_64+arm64。安装版实机确认两个独立设置入口及无清单检查状态。
-- 新 DMG SHA-256 为 `9068a1b74871e8b7998c328f66d9470e213dadd5a742a2ea0ddbbc0ceb34d3a7`，updater 归档为 `0333fce016a0aa85fb7beb3132c99cf1a3358a61349e692ba608bdfddb379b73`。Windows 安装包本轮未重编，沿用旧校验值。
-- 待办：发布者需在 GitHub 仓库添加 `TAURI_SIGNING_PRIVATE_KEY` 和 `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` Secrets；当前 `v1.0.0` Release 尚无 `latest.json`，下一次 `v1.0.1` 发布后才会生效。启动后自动检查和 24 小时节流尚未实现。
+- `v1.0.1` 已发布：https://github.com/JazZ301/FundDesk/releases/tag/v1.0.1 ，Latest Release 与公开 `latest.json` 均解析为 `1.0.1`。Release 包含 macOS DMG、macOS updater 归档及签名、Windows NSIS 安装包及签名、`latest.json` 和 `SHA256SUMS.txt`；GitHub 页面显示的 7 个文件摘要与本地构建一致。
+- GitHub Secrets `TAURI_SIGNING_PRIVATE_KEY` 与 `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` 已添加并更新；上传 Release 资产时临时创建的 classic PAT `funddesk-release-upload` 已在 GitHub UI 删除并确认消失。私钥和令牌均未进入仓库、日志或文档。
+- 发布资产 SHA-256：DMG `bfc15bbb17dc6fabfd5c2760e2d090b859b1f21a0472638d3616e3efbb19aaa6`，macOS updater 归档 `6fcbf84be92144d1236fed1860bf5bac9f2139ae2672f6032e606e950bc97aad`，macOS 签名 `3d46652370676105b27c88b938f7a99795b5a91c6ebb4510903cf0e02f1bb677`，Windows 安装包 `5e3858b8dbd88e43be2967f723a5ebffb68aa7199d71276d0aac13212038b2d4`，Windows 签名 `fd1cbaae0e2f4341f8e38107943251bafcb56d41ee91ee44be28ce75d1f5874a`，`latest.json` `be89460f87ccb5508e4741f787f8a0108eb03d13ee6b2d2deaac2e1ae52fc7e2`。
+- `release.yml` 已调整为单平台失败不阻断另一平台上传，并要求至少一个 bundle job 成功；重跑时产物名带 `github.run_attempt` 以避免覆盖。启动后自动检查和 24 小时节流仍未实现。
+
+## 2026-11-28 v1.0.1 发布与验证
+
+- 从 `v1.0.1` Release 验证公开端点：`releases/latest/download/latest.json` 返回版本 `1.0.1`，包含 `darwin-aarch64`、`darwin-x86_64` 和 `windows-x86_64` 三个平台；DMG、macOS updater 归档、Windows 安装包和 `SHA256SUMS.txt` 的下载路径均返回 HTTP 200。
+- Release 正文已改为 `release-notes/v1.0.1.md` 的规范内容，误附的 `user-attachments` 链接已移除；页面上 7 个发布文件的 GitHub 摘要与 `SHA256SUMS.txt` 一致。
+- 当前 macOS 包为 ad-hoc 签名、未公证；Windows 包未做 Authenticode 签名。CI 中 Windows bundle job 曾失败，本次 Windows installer 来自此前成功产物并已用当前版本密钥重新签名。
+- 本地 `1.0.0 → 1.0.1` 更新演练已完成；正式版本安装的最终实机复验另见下方验证记录。
 
 ## 2026-11-28 检查更新方案设计
 

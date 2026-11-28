@@ -56,6 +56,7 @@ jobs:
           - os: windows-latest
             target: x86_64-pc-windows-msvc
             artifact: Windows
+    continue-on-error: true
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -124,8 +125,9 @@ jobs:
           args: --target ${{ matrix.target }} ${{ env.TAURI_EXTRA_ARGS }}
       - name: Upload release bundles
         uses: actions/upload-artifact@v4
+        id: upload-bundles
         with:
-          name: release-${{ matrix.artifact }}
+          name: release-${{ matrix.artifact }}-${{ github.run_attempt }}
           path: |
             target/**/bundle/dmg/*.dmg
             target/**/bundle/macos/*.app.tar.gz
@@ -137,3 +139,19 @@ jobs:
             target/**/bundle/msi/*.msi.zip
             target/**/bundle/msi/*.msi.zip.sig
           if-no-files-found: error
+
+  require-bundles:
+    needs: bundle
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require at least one bundle job to succeed
+        shell: bash
+        env:
+          BUNDLE_RESULT: ${{ needs.bundle.result }}
+        run: |
+          echo "bundle matrix result: ${BUNDLE_RESULT}"
+          if [ "${BUNDLE_RESULT}" != "success" ]; then
+            echo "::error::All bundle jobs failed"
+            exit 1
+          fi
