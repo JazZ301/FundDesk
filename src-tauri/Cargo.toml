@@ -1,0 +1,55 @@
+[package]
+name = "funddesk"
+version = "1.0.0"
+description = "FundDesk（基金看板）"
+edition = "2021"
+license = "MIT"
+
+[lib]
+name = "funddesk_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+chrono = "0.4"
+funddesk-core = { path = "../crates/core" }
+rust_decimal = "1"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tauri = { version = "2", features = ["tray-icon", "image-png"] }
+tauri-plugin-dialog = "2.8.4"
+tauri-plugin-single-instance = "2"
+tokio = { version = "1", features = ["time", "sync", "rt", "macros"] }
+
+[target.'cfg(target_os = "macos")'.dependencies]
+block2 = "0.6"
+objc2 = "0.6"
+objc2-app-kit = { version = "0.3", default-features = false, features = [
+  "NSAnimation",
+  "NSAnimationContext",
+  "NSAttributedString",
+  "NSButton",
+  "NSColor",
+  "NSControl",
+  "NSFont",
+  "NSGraphics",
+  "NSStatusBarButton",
+  "NSStatusItem",
+  "NSText",
+  "NSTextField",
+  "NSView",
+  "block2",
+] }
+objc2-foundation = { version = "0.3", default-features = false, features = [
+  "NSArray",
+  "NSAttributedString",
+  "NSDictionary",
+  "NSGeometry",
+  "NSString",
+] }
+
+[features]
+# 生产构建必须开启：否则 Tauri 会继续使用 devUrl。
+custom-protocol = ["tauri/custom-protocol"]

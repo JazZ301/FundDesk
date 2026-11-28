@@ -1,0 +1,106 @@
+{
+  "holdings": [
+    {
+      "fund": {
+        "code": "110020",
+        "name": "易方达沪深300ETF联接A",
+        "kind": "指数型-股票",
+        "initials": "YFDHS300ETFLJA",
+        "pinyin": "yifangdahushen300etflianjieA"
+      },
+      "shares": 20000,
+      "costPerShare": 1.5,
+      "groups": []
+    },
+    {
+      "fund": {
+        "code": "161725",
+        "name": "招商中证白酒指数(LOF)A",
+        "kind": "指数型-股票",
+        "initials": "ZSZZBJZSLOFA",
+        "pinyin": "zhaoshangzhongzhengbaijiuzhishu"
+      },
+      "shares": 30000,
+      "costPerShare": 0.6,
+      "groups": []
+    },
+    {
+      "fund": {
+        "code": "270042",
+        "name": "广发纳斯达克100ETF联接人民币(QDII)A",
+        "kind": "指数型-海外股票",
+        "initials": "GFNSDK100ETFLJRMBQDIIA",
+        "pinyin": "guangfanasadake100etflianjierenminbi"
+      },
+      "shares": 3000,
+      "costPerShare": 6.5,
+      "groups": []
+    },
+    {
+      "fund": {
+        "code": "000216",
+        "name": "华安黄金ETF联接A",
+        "kind": "指数型-其他",
+        "initials": "HAHJETFLJA",
+        "pinyin": "huaanhuangjinetflianjieA"
+      },
+      "shares": 8000,
+      "costPerShare": 2.4,
+      "groups": []
+    },
+    {
+      "fund": {
+        "code": "090010",
+        "name": "大成中证红利指数A",
+        "kind": "指数型-股票",
+        "initials": "DCZZHLZSA",
+        "pinyin": "dachengzhongzhenghonglizhishuA"
+      },
+      "shares": 10000,
+      "costPerShare": 2.8,
+      "groups": [
+        "red"
+      ]
+    },
+    {
+      "fund": {
+        "code": "007300",
+        "name": "国联安中证半导体ETF联接A",
+        "kind": "指数型-股票",
+        "initials": "GLAZZBDTETFLJA",
+        "pinyin": "guoliananzhongzhengbandaotietflianjieA"
+      },
+      "shares": 6000,
+      "costPerShare": 2.5,
+      "groups": [
+        "macd"
+      ]
+    },
+    {
+      "fund": {
+        "code": "005827",
+        "name": "易方达蓝筹精选混合",
+        "kind": "混合型-偏股",
+        "initials": "YFDLCJXHH",
+        "pinyin": "yifangdalanchoujingxuanhunhe"
+      },
+      "shares": 15000,
+      "costPerShare": 1.4,
+      "groups": []
+    },
+    {
+      "fund": {
+        "code": "163406",
+        "name": "兴全合润混合A",
+        "kind": "混合型-偏股",
+        "initials": "XQHRHHA",
+        "pinyin": "xingquanherunhunheA"
+      },
+      "shares": 10000,
+      "costPerShare": 1.6,
+      "groups": []
+    }
+  ],
+  "refreshInterval": 10,
+  "appearanceTheme": "light"
+}

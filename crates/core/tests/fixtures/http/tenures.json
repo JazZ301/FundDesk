@@ -1,0 +1,35 @@
+{
+  "Datas": [
+    {
+      "MGRID": "30066753,30589069",
+      "MGRNAME": "余海燕,庞亚平",
+      "FCODE": "007339",
+      "DAYS": 1442.0,
+      "FEMPDATE": "2022-12-15",
+      "LEMPDATE": "",
+      "PENAVGROWTH": 7.8739
+    },
+    {
+      "MGRID": "30066753",
+      "MGRNAME": "余海燕",
+      "FCODE": "007339",
+      "DAYS": 1001.0,
+      "FEMPDATE": "2020-03-18",
+      "LEMPDATE": "2022-12-14",
+      "PENAVGROWTH": 13.7766
+    },
+    {
+      "MGRID": "30066753,30542081",
+      "MGRNAME": "余海燕,杨俊",
+      "FCODE": "007339",
+      "DAYS": 327.0,
+      "FEMPDATE": "2019-04-25",
+      "LEMPDATE": "2020-03-17",
+      "PENAVGROWTH": -2.3376
+    }
+  ],
+  "ErrCode": 0,
+  "ErrMsg": null,
+  "TotalCount": 3,
+  "Expansion": null
+}

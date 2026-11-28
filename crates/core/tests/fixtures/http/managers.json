@@ -1,0 +1,772 @@
+{
+  "Datas": [
+    {
+      "MGRID": "30066753",
+      "MGRNAME": "余海燕",
+      "FEMPDATE": "2019-04-25",
+      "DAYS": 2772.0,
+      "EDUCATION": "硕士",
+      "RESUME": "余海燕女士:经济学硕士。曾任汇丰银行Consumer Credit Risk信用风险分析师,华宝兴业基金管理有限公司分析师、基金经理助理、基金经理,易方达基金管理有限公司投资发展部产品经理。担任易方达基金管理有限公司易方达沪深300医药卫生交易型开放式指数证券投资基金基金经理(自2013年9月23日起任职)、易方达沪深300非银行金融交易型开放式指数证券投资基金基金经理(自2014年6月26日起任职)、易方达沪深300非银行金融交易型开放式指数证券投资基金联接基金基金经理(自2015年1月22日起任职)、易方达上证50指数分级证券投资基金基金经理(自2015年4月15日起任职直到2021年1月1日离任)、易方达国企改革指数分级证券投资基金基金经理(自2015年6月15日至2021年1月1日任职)、易方达军工指数分级证券投资基金基金经理(自2015年7月8日至2021年1月1日任职)、易方达证券公司指数分级证券投资基金基金经理(自2015年7月8日起任职直到20211年1月1日离任)、易方达沪深300交易型开放式指数发起式证券投资基金基金经理(自2016年4月16日起任职)、易方达中证500交易型开放式指数证券投资基金基金经理(自2016年4月16日起任职)、易方达沪深300交易型开放式指数发起式证券投资基金联接基金基金经理(自2016年4月16日起任职)、易方达中证海外中国互联网50交易型开放式指数证券投资基金基金经理(自2017年1月4日起任职)、易方达中证军工交易型开放式指数证券投资基金基金经理(自2017年7月14日至2021年4月15日)、易方达中证全指证券公司交易型开放式指数证券投资基金基金经理(自2017年7月27日至2021年4月15日)、易方达沪深300医药卫生交易型开放式指数证券投资基金联接基金基金经理(自2017年11月22日起任职)、易方达黄金交易型开放式证券投资基金联接基金基金经理(自2018年8月11日至2021年4月15日)、易方达恒生中国企业交易型开放式指数证券投资基金联接基金基金经理(自2018年8月11日起任职)、易方达黄金交易型开放式证券投资基金基金经理(自2018年8月11日至2021年4月15日)、易方达恒生中国企业交易型开放式指数证券投资基金基金经理(自2018年8月11日起任职)、易方达中证海外中国互联网50交易型开放式指数证券投资基金联接基金基金经理(自2019年1月18日起任职)、易方达中证500交易型开放式指数证券投资基金发起式联接基金基金经理(自2019年3月20日起任职),易方达日兴资管日经225交易型开放式指数证券投资基金(QDII)基金经理(自2019年6月12日起任职)。2022年11月1日起任易方达中证军工交易型开放式指数证券投资基金、易方达中证军工指数证券投资基金(LOF)基金经理。曾任易方达中证港股通互联网交易型开放式指数证券投资基金、易方达中证港股通互联网交易型开放式指数证券投资基金发起式联接基金基金经理。2025年11月22日担任易方达上证50指数证券投资基金(LOF)基金经理。",
+      "PHOTOURL": "https://pdf.dfcfw.com/pdf/H8_30066753_1.PNG",
+      "fundlist": [
+        {
+          "FCODE": "502048",
+          "SHORTNAME": "易方达上证50指数(LOF)A",
+          "FEMPDATE": "2025-11-22",
+          "LEMPDATE": null,
+          "PENAVGROWTH": -2.1874
+        },
+        {
+          "FCODE": "012875",
+          "SHORTNAME": "易方达上证50指数(LOF)C",
+          "FEMPDATE": "2025-11-22",
+          "LEMPDATE": null,
+          "PENAVGROWTH": -2.5903
+        },
+        {
+          "FCODE": "022913",
+          "SHORTNAME": "易方达中证500ETF联接发起式Y",
+          "FEMPDATE": "2024-12-13",
+          "LEMPDATE": null,
+          "PENAVGROWTH": 5.3225
+        },
+        {
+          "FCODE": "022928",
+          "SHORTNAME": "易方达沪深300ETF联接Y",
+          "FEMPDATE": "2024-12-13",
+          "LEMPDATE": null,
+          "PENAVGROWTH": 4.9796
+        },
+        {
+          "FCODE": "019313",
+          "SHORTNAME": "易方达中证港股通互联网ETF发起式联接A",
+          "FEMPDATE": "2023-09-21",
+          "LEMPDATE": "2024-11-27",
+          "PENAVGROWTH": 9.0
+        },
+        {
+          "FCODE": "019314",
+          "SHORTNAME": "易方达中证港股通互联网ETF发起式联接C",
+          "FEMPDATE": "2023-09-21",
+          "LEMPDATE": "2024-11-27",
+          "PENAVGROWTH": 8.62
+        },
+        {
+          "FCODE": "513040",
+          "SHORTNAME": "港股通互联网ETF易方达",
+          "FEMPDATE": "2023-05-31",
+          "LEMPDATE": "2024-11-27",
+          "PENAVGROWTH": 12.54
+        },
+        {
+          "FCODE": "502003",
+          "SHORTNAME": "易方达中证军工(LOF)A",
+          "FEMPDATE": "2022-11-01",
+          "LEMPDATE": null,
+          "PENAVGROWTH": -21.8634
+        },
+        {
+          "FCODE": "012874",
+          "SHORTNAME": "易方达中证全指证券公司指数(LOF)C",
+          "FEMPDATE": "2022-11-01",
+          "LEMPDATE": null,
+          "PENAVGROWTH": 16.8645
+        },
+        {
+          "FCODE": "012842",
+          "SHORTNAME": "易方达中证军工(LOF)C",
+          "FEMPDATE": "2022-11-01",
+          "LEMPDATE": null,
+          "PENAVGROWTH": -22.6565
+        },
+        {
+          "FCODE": "502010",
+          "SHORTNAME": "易方达中证全指证券公司指数(LOF)A",
+          "FEMPDATE": "2022-11-01",
+          "LEMPDATE": null,
+          "PENAVGROWTH": 18.7912
+        },
+        {
+          "FCODE": "512560",
+          "SHORTNAME": "军工ETF易方达",
+          "FEMPDATE": "2022-11-01",
+          "LEMPDATE": null,
+          "PENAVGROWTH": -21.7077
+        },
+        {
+          "FCODE": "007380",
+          "SHORTNAME": "易方达上证50ETF联接基金C",
+          "FEMPDATE": "2019-09-09",
+          "LEMPDATE": null,
+          "PENAVGROWTH": 25.2
+        },
+        {
+          "FCODE": "007379",
+          "SHORTNAME": "易方达上证50ETF联接基金A",
+          "FEMPDATE": "2019-09-09",
+          "LEMPDATE": null,
+          "PENAVGROWTH": 26.14
+        },
+        {
+          "FCODE": "510100",
+          "SHORTNAME": "上证50ETF易方达",
+          "FEMPDATE": "2019-09-06",
+          "LEMPDATE": null,
+          "PENAVGROWTH": 29.8219
+        },
+        {
+          "FCODE": "007883",
+          "SHORTNAME": "易方达医药ETF联接C",
+          "FEMPDATE": "2019-08-20",
+          "LEMPDATE": null,
+          "PENAVGROWTH": -11.8478
+        },
+        {
+          "FCODE": "007882",
+          "SHORTNAME": "易方达证券保险ETF联接C",
+          "FEMPDATE": "2019-08-20",
+          "LEMPDATE": null,
+          "PENAVGROWTH": -1.1598
+        },
+        {
+          "FCODE": "513000",
+          "SHORTNAME": "日经225ETF易方达",
+          "FEMPDATE": "2019-06-12",
+          "LEMPDATE": null,
+          "PENAVGROWTH": 89.0
+        },
+        {
+          "FCODE": "007339",
+          "SHORTNAME": "易方达沪深300ETF联接C",
+          "FEMPDATE": "2019-04-25",
+          "LEMPDATE": null,
+          "PENAVGROWTH": 19.8662
+        },
+        {
+          "FCODE": "007029",
+          "SHORTNAME": "易方达中证500ETF联接发起式C",
+          "FEMPDATE": "2019-03-20",
+          "LEMPDATE": null,
+          "PENAVGROWTH": 44.48
+        },
+        {
+          "FCODE": "007028",
+          "SHORTNAME": "易方达中证500ETF联接发起式A",
+          "FEMPDATE": "2019-03-20",
+          "LEMPDATE": null,
+          "PENAVGROWTH": 45.64
+        },
+        {
+          "FCODE": "006328",
+          "SHORTNAME": "易方达中证海外互联网50ETF联接(QDII)C",
+          "FEMPDATE": "2019-01-18",
+          "LEMPDATE": null,
+          "PENAVGROWTH": -33.82
+        },
+        {
+          "FCODE": "006330",
+          "SHORTNAME": "易方达中证海外互联网50ETF联接(QDII)(美元现汇)C",
+          "FEMPDATE": "2019-01-18",
+          "LEMPDATE": null,
+          "PENAVGROWTH": -33.2882
+        },
+        {
+          "FCODE": "006329",
+          "SHORTNAME": "易方达中证海外互联网50ETF联接(QDII)(美元现汇)A",
+          "FEMPDATE": "2019-01-18",
+          "LEMPDATE": null,
+          "PENAVGROWTH": -30.8525
+        },
+        {
+          "FCODE": "006327",
+          "SHORTNAME": "易方达中证海外互联网50ETF联接(QDII)A",
+          "FEMPDATE": "2019-01-18",
+          "LEMPDATE": null,
+          "PENAVGROWTH": -31.39
+        },
+        {
+          "FCODE": "510900",
+          "SHORTNAME": "恒生中国企业ETF易方达",
+          "FEMPDATE": "2018-08-11",
+          "LEMPDATE": null,
+          "PENAVGROWTH": -23.1605
+        },
+        {
+          "FCODE": "110032",
+          "SHORTNAME": "易方达恒生国企ETF联接现汇A",
+          "FEMPDATE": "2018-08-11",
+          "LEMPDATE": null,
+          "PENAVGROWTH": -22.3881
+        },
+        {
+          "FCODE": "159934",
+          "SHORTNAME": "黄金ETF易方达",
+          "FEMPDATE": "2018-08-11",
+          "LEMPDATE": "2021-04-15",
+          "PENAVGROWTH": 35.465
+        },
+        {
+          "FCODE": "110033",
+          "SHORTNAME": "易方达恒生国企ETF联接现钞A",
+          "FEMPDATE": "2018-08-11",
+          "LEMPDATE": null,
+          "PENAVGROWTH": -22.3881
+        },
+        {
+          "FCODE": "000307",
+          "SHORTNAME": "易方达黄金ETF联接A",
+          "FEMPDATE": "2018-08-11",
+          "LEMPDATE": "2021-04-15",
+          "PENAVGROWTH": 34.3211
+        },
+        {
+          "FCODE": "002963",
+          "SHORTNAME": "易方达黄金ETF联接C",
+          "FEMPDATE": "2018-08-11",
+          "LEMPDATE": "2021-04-15",
+          "PENAVGROWTH": 33.4214
+        },
+        {
+          "FCODE": "005675",
+          "SHORTNAME": "易方达恒生国企ETF联接C",
+          "FEMPDATE": "2018-08-11",
+          "LEMPDATE": null,
+          "PENAVGROWTH": -22.9138
+        },
+        {
+          "FCODE": "110031",
+          "SHORTNAME": "易方达恒生国企ETF联接A",
+          "FEMPDATE": "2018-08-11",
+          "LEMPDATE": null,
+          "PENAVGROWTH": -23.8839
+        },
+        {
+          "FCODE": "001344",
+          "SHORTNAME": "易方达医药ETF联接A",
+          "FEMPDATE": "2017-11-22",
+          "LEMPDATE": null,
+          "PENAVGROWTH": -7.57
+        },
+        {
+          "FCODE": "512570",
+          "SHORTNAME": "证券ETF易方达",
+          "FEMPDATE": "2017-07-27",
+          "LEMPDATE": "2021-04-15",
+          "PENAVGROWTH": -0.22
+        },
+        {
+          "FCODE": "512560",
+          "SHORTNAME": "军工ETF易方达",
+          "FEMPDATE": "2017-07-14",
+          "LEMPDATE": "2021-04-15",
+          "PENAVGROWTH": 18.3745
+        },
+        {
+          "FCODE": "513050",
+          "SHORTNAME": "中概互联网ETF易方达",
+          "FEMPDATE": "2017-01-04",
+          "LEMPDATE": null,
+          "PENAVGROWTH": -14.4
+        },
+        {
+          "FCODE": "510580",
+          "SHORTNAME": "中证500ETF易方达",
+          "FEMPDATE": "2016-04-16",
+          "LEMPDATE": null,
+          "PENAVGROWTH": 15.4635
+        },
+        {
+          "FCODE": "510310",
+          "SHORTNAME": "沪深300ETF易方达",
+          "FEMPDATE": "2016-04-16",
+          "LEMPDATE": null,
+          "PENAVGROWTH": 53.842
+        },
+        {
+          "FCODE": "110020",
+          "SHORTNAME": "易方达沪深300ETF联接A",
+          "FEMPDATE": "2016-04-16",
+          "LEMPDATE": null,
+          "PENAVGROWTH": 53.0919
+        },
+        {
+          "FCODE": "502011",
+          "SHORTNAME": "易方达证券公司分级A",
+          "FEMPDATE": "2015-07-08",
+          "LEMPDATE": "2020-12-31",
+          "PENAVGROWTH": 149.0175
+        },
+        {
+          "FCODE": "502012",
+          "SHORTNAME": "易方达证券公司分级B",
+          "FEMPDATE": "2015-07-08",
+          "LEMPDATE": "2020-12-31",
+          "PENAVGROWTH": -65.6391
+        },
+        {
+          "FCODE": "502003",
+          "SHORTNAME": "易方达中证军工(LOF)A",
+          "FEMPDATE": "2015-07-08",
+          "LEMPDATE": "2021-01-01",
+          "PENAVGROWTH": -3.5311
+        },
+        {
+          "FCODE": "502010",
+          "SHORTNAME": "易方达中证全指证券公司指数(LOF)A",
+          "FEMPDATE": "2015-07-08",
+          "LEMPDATE": "2021-01-01",
+          "PENAVGROWTH": -6.9431
+        },
+        {
+          "FCODE": "502006",
+          "SHORTNAME": "易方达中证国企改革(LOF)A",
+          "FEMPDATE": "2015-06-15",
+          "LEMPDATE": "2021-01-01",
+          "PENAVGROWTH": -1.9857
+        },
+        {
+          "FCODE": "502050",
+          "SHORTNAME": "易方达上证50指数分级B",
+          "FEMPDATE": "2015-04-15",
+          "LEMPDATE": "2020-12-31",
+          "PENAVGROWTH": -29.9931
+        },
+        {
+          "FCODE": "502048",
+          "SHORTNAME": "易方达上证50指数(LOF)A",
+          "FEMPDATE": "2015-04-15",
+          "LEMPDATE": "2021-01-01",
+          "PENAVGROWTH": 33.5834
+        },
+        {
+          "FCODE": "502049",
+          "SHORTNAME": "易方达上证50指数分级A",
+          "FEMPDATE": "2015-04-15",
+          "LEMPDATE": "2020-12-31",
+          "PENAVGROWTH": 30.3379
+        },
+        {
+          "FCODE": "000950",
+          "SHORTNAME": "易方达证券保险ETF联接A",
+          "FEMPDATE": "2015-01-22",
+          "LEMPDATE": null,
+          "PENAVGROWTH": 0.46
+        },
+        {
+          "FCODE": "512070",
+          "SHORTNAME": "证券保险ETF易方达",
+          "FEMPDATE": "2014-06-26",
+          "LEMPDATE": null,
+          "PENAVGROWTH": 122.84
+        },
+        {
+          "FCODE": "512010",
+          "SHORTNAME": "医药ETF易方达",
+          "FEMPDATE": "2013-09-23",
+          "LEMPDATE": null,
+          "PENAVGROWTH": 50.04
+        },
+        {
+          "FCODE": "240019",
+          "SHORTNAME": "华宝中证银行ETF联接A",
+          "FEMPDATE": "2011-08-09",
+          "LEMPDATE": "2012-10-16",
+          "PENAVGROWTH": -8.1
+        },
+        {
+          "FCODE": "510280",
+          "SHORTNAME": "华宝上证180成长ETF",
+          "FEMPDATE": "2011-08-04",
+          "LEMPDATE": "2012-10-16",
+          "PENAVGROWTH": -11.2
+        },
+        {
+          "FCODE": "240014",
+          "SHORTNAME": "华宝中证A100ETF联接A",
+          "FEMPDATE": "2010-12-10",
+          "LEMPDATE": "2012-10-16",
+          "PENAVGROWTH": -19.37
+        }
+      ]
+    },
+    {
+      "MGRID": "30589069",
+      "MGRNAME": "庞亚平",
+      "FEMPDATE": "2022-12-15",
+      "DAYS": 1442.0,
+      "EDUCATION": "硕士",
+      "RESUME": "庞亚平先生:中国,统计学硕士,CFA。易方达中证A500交易型开放式指数证券投资基金联接基金的基金经理。曾任中证指数有限公司研究部研究员、市场部主管。2016年1月加入华夏基金管理有限公司,曾任数量投资部研究员、投资经理、数量投资部总监,曾任华夏中证央企结构调整交易型开放式指数证券投资基金、华夏中证央企结构调整交易型开放式指数证券投资基金联接基金、华夏中证四川国企改革交易型开放式指数证券投资基金联接基金、华夏中证四川国企改革交易型开放式指数证券投资基金、战略新兴成指交易型开放式指数证券投资基金发起式联接基金、战略新兴成指交易型开放式指数证券投资基金、华夏中证AH经济蓝筹股票指数发起式证券投资基金、华夏中证浙江国资创新发展交易型开放式指数证券投资基金基金经理。曾担任易方达中证上海环交所碳中和交易型开放式指数证券投资基金、易方达标普生物科技指数证券投资基金(LOF)、易方达中证光伏产业指数发起式证券投资基金、易方达上证科创板成长交易型开放式指数证券投资基金、易方达中证家电龙头指数发起式基金(变更为易方达中证家电龙头交易型开放式指数证券投资基金发起式联接基金)、易方达中证港股通互联网交易型开放式指数证券投资基金、易方达中证港股通互联网交易型开放式指数证券投资基金发起式联接基金、易方达中证A100交易型开放式指数证券投资基金基金经理。2022年12月15日起担任易方达沪深300交易型开放式指数发起式证券投资基金、易方达沪深300交易型开放式指数发起式证券投资基金联接基金的基金经理。2022年12月17日任易方达中证500交易型开放式指数证券投资基金发起式联接基金基金经理、易方达中证500交易型开放式指数证券投资基金基金经理。2023年2月15日担任易方达中证1000交易型开放式指数证券投资基金联接基金、易方达中证1000交易型开放式指数证券投资基金基金经理。2023年7月11日起任易方达中证100ETF的基金经理,2023年11月08日任易方达上证科创板100ETF基金经理,2024年2月20日任易方达中证国新央企科技引领ETF联接的基金经理。2024年11月11日任易方达中证A500ETF联接基金经理,2024年11月12日任易方达中证A500ETF基金经理,2025年4月8日任易方达上证科创板综合ETF联接基金经理。",
+      "PHOTOURL": "https://pdf.dfcfw.com/pdf/H8_30589069_1.PNG",
+      "fundlist": [
+        {
+          "FCODE": "159311",
+          "SHORTNAME": "数字经济ETF易方达",
+          "FEMPDATE": "2025-07-07",
+          "LEMPDATE": null,
+          "PENAVGROWTH": 6.46
+        },
+        {
+          "FCODE": "023730",
+          "SHORTNAME": "易方达上证科创板综合ETF联接C",
+          "FEMPDATE": "2025-04-08",
+          "LEMPDATE": null,
+          "PENAVGROWTH": 13.33
+        },
+        {
+          "FCODE": "023729",
+          "SHORTNAME": "易方达上证科创板综合ETF联接A",
+          "FEMPDATE": "2025-04-08",
+          "LEMPDATE": null,
+          "PENAVGROWTH": 13.89
+        },
+        {
+          "FCODE": "022913",
+          "SHORTNAME": "易方达中证500ETF联接发起式Y",
+          "FEMPDATE": "2024-12-13",
+          "LEMPDATE": null,
+          "PENAVGROWTH": 5.3225
+        },
+        {
+          "FCODE": "022930",
+          "SHORTNAME": "易方达中证A500ETF联接Y",
+          "FEMPDATE": "2024-12-13",
+          "LEMPDATE": null,
+          "PENAVGROWTH": 4.5912
+        },
+        {
+          "FCODE": "022928",
+          "SHORTNAME": "易方达沪深300ETF联接Y",
+          "FEMPDATE": "2024-12-13",
+          "LEMPDATE": null,
+          "PENAVGROWTH": 4.9796
+        },
+        {
+          "FCODE": "159361",
+          "SHORTNAME": "A500ETF易方达",
+          "FEMPDATE": "2024-11-12",
+          "LEMPDATE": null,
+          "PENAVGROWTH": 1.11
+        },
+        {
+          "FCODE": "022460",
+          "SHORTNAME": "易方达中证A500ETF联接C",
+          "FEMPDATE": "2024-11-11",
+          "LEMPDATE": null,
+          "PENAVGROWTH": 3.45
+        },
+        {
+          "FCODE": "022459",
+          "SHORTNAME": "易方达中证A500ETF联接A",
+          "FEMPDATE": "2024-11-11",
+          "LEMPDATE": null,
+          "PENAVGROWTH": 3.88
+        },
+        {
+          "FCODE": "019493",
+          "SHORTNAME": "易方达央企科技50ETF联接A",
+          "FEMPDATE": "2024-02-20",
+          "LEMPDATE": null,
+          "PENAVGROWTH": 21.43
+        },
+        {
+          "FCODE": "019494",
+          "SHORTNAME": "易方达央企科技50ETF联接C",
+          "FEMPDATE": "2024-02-20",
+          "LEMPDATE": null,
+          "PENAVGROWTH": 20.45
+        },
+        {
+          "FCODE": "588210",
+          "SHORTNAME": "科创100ETF易方达",
+          "FEMPDATE": "2023-11-08",
+          "LEMPDATE": "2026-02-11",
+          "PENAVGROWTH": 52.1
+        },
+        {
+          "FCODE": "019313",
+          "SHORTNAME": "易方达中证港股通互联网ETF发起式联接A",
+          "FEMPDATE": "2023-09-21",
+          "LEMPDATE": "2024-11-27",
+          "PENAVGROWTH": 9.0
+        },
+        {
+          "FCODE": "019314",
+          "SHORTNAME": "易方达中证港股通互联网ETF发起式联接C",
+          "FEMPDATE": "2023-09-21",
+          "LEMPDATE": "2024-11-27",
+          "PENAVGROWTH": 8.62
+        },
+        {
+          "FCODE": "018647",
+          "SHORTNAME": "易方达中证家电龙头ETF联接发起式C",
+          "FEMPDATE": "2023-09-19",
+          "LEMPDATE": "2025-11-22",
+          "PENAVGROWTH": 30.37
+        },
+        {
+          "FCODE": "018646",
+          "SHORTNAME": "易方达中证家电龙头ETF联接发起式A",
+          "FEMPDATE": "2023-09-19",
+          "LEMPDATE": "2025-11-22",
+          "PENAVGROWTH": 31.21
+        },
+        {
+          "FCODE": "588020",
+          "SHORTNAME": "科创成长ETF易方达",
+          "FEMPDATE": "2023-08-23",
+          "LEMPDATE": "2026-02-11",
+          "PENAVGROWTH": 105.76
+        },
+        {
+          "FCODE": "513040",
+          "SHORTNAME": "港股通互联网ETF易方达",
+          "FEMPDATE": "2023-07-27",
+          "LEMPDATE": "2024-11-27",
+          "PENAVGROWTH": 6.835
+        },
+        {
+          "FCODE": "159686",
+          "SHORTNAME": "A100ETF易方达",
+          "FEMPDATE": "2023-07-11",
+          "LEMPDATE": "2026-02-11",
+          "PENAVGROWTH": 29.52
+        },
+        {
+          "FCODE": "563050",
+          "SHORTNAME": "央企科技ETF易方达",
+          "FEMPDATE": "2023-06-21",
+          "LEMPDATE": null,
+          "PENAVGROWTH": -1.0098
+        },
+        {
+          "FCODE": "017646",
+          "SHORTNAME": "易方达中证光伏产业ETF联接发起式A",
+          "FEMPDATE": "2023-04-11",
+          "LEMPDATE": "2024-05-07",
+          "PENAVGROWTH": -37.47
+        },
+        {
+          "FCODE": "017647",
+          "SHORTNAME": "易方达中证光伏产业ETF联接发起式C",
+          "FEMPDATE": "2023-04-11",
+          "LEMPDATE": "2024-05-07",
+          "PENAVGROWTH": -37.67
+        },
+        {
+          "FCODE": "016631",
+          "SHORTNAME": "易方达中证1000ETF联接C",
+          "FEMPDATE": "2023-02-15",
+          "LEMPDATE": null,
+          "PENAVGROWTH": -19.3754
+        },
+        {
+          "FCODE": "016630",
+          "SHORTNAME": "易方达中证1000ETF联接A",
+          "FEMPDATE": "2023-02-15",
+          "LEMPDATE": null,
+          "PENAVGROWTH": -18.4666
+        },
+        {
+          "FCODE": "159633",
+          "SHORTNAME": "中证1000ETF易方达",
+          "FEMPDATE": "2023-02-15",
+          "LEMPDATE": null,
+          "PENAVGROWTH": -15.3112
+        },
+        {
+          "FCODE": "161127",
+          "SHORTNAME": "易方达标普生物科技人民币A",
+          "FEMPDATE": "2023-02-10",
+          "LEMPDATE": "2024-07-13",
+          "PENAVGROWTH": 18.8241
+        },
+        {
+          "FCODE": "003720",
+          "SHORTNAME": "易方达标普生物科技美元汇A",
+          "FEMPDATE": "2023-02-10",
+          "LEMPDATE": "2024-07-13",
+          "PENAVGROWTH": 13.1432
+        },
+        {
+          "FCODE": "012867",
+          "SHORTNAME": "易方达标普生物科技美元汇C",
+          "FEMPDATE": "2023-02-10",
+          "LEMPDATE": "2024-07-13",
+          "PENAVGROWTH": 12.5913
+        },
+        {
+          "FCODE": "012866",
+          "SHORTNAME": "易方达标普生物科技人民币C",
+          "FEMPDATE": "2023-02-10",
+          "LEMPDATE": "2024-07-13",
+          "PENAVGROWTH": 18.2172
+        },
+        {
+          "FCODE": "017516",
+          "SHORTNAME": "易方达北证50成份指数C",
+          "FEMPDATE": "2022-12-27",
+          "LEMPDATE": null,
+          "PENAVGROWTH": -20.48
+        },
+        {
+          "FCODE": "017515",
+          "SHORTNAME": "易方达北证50成份指数A",
+          "FEMPDATE": "2022-12-27",
+          "LEMPDATE": null,
+          "PENAVGROWTH": -19.55
+        },
+        {
+          "FCODE": "007028",
+          "SHORTNAME": "易方达中证500ETF联接发起式A",
+          "FEMPDATE": "2022-12-17",
+          "LEMPDATE": null,
+          "PENAVGROWTH": 6.0897
+        },
+        {
+          "FCODE": "007029",
+          "SHORTNAME": "易方达中证500ETF联接发起式C",
+          "FEMPDATE": "2022-12-17",
+          "LEMPDATE": null,
+          "PENAVGROWTH": 5.6758
+        },
+        {
+          "FCODE": "510580",
+          "SHORTNAME": "中证500ETF易方达",
+          "FEMPDATE": "2022-12-17",
+          "LEMPDATE": null,
+          "PENAVGROWTH": 7.0295
+        },
+        {
+          "FCODE": "510310",
+          "SHORTNAME": "沪深300ETF易方达",
+          "FEMPDATE": "2022-12-15",
+          "LEMPDATE": null,
+          "PENAVGROWTH": 9.2175
+        },
+        {
+          "FCODE": "007339",
+          "SHORTNAME": "易方达沪深300ETF联接C",
+          "FEMPDATE": "2022-12-15",
+          "LEMPDATE": null,
+          "PENAVGROWTH": 7.8739
+        },
+        {
+          "FCODE": "110020",
+          "SHORTNAME": "易方达沪深300ETF联接A",
+          "FEMPDATE": "2022-12-15",
+          "LEMPDATE": null,
+          "PENAVGROWTH": 8.7228
+        },
+        {
+          "FCODE": "562990",
+          "SHORTNAME": "碳中和ETF易方达",
+          "FEMPDATE": "2022-08-10",
+          "LEMPDATE": "2024-07-13",
+          "PENAVGROWTH": -27.0684
+        },
+        {
+          "FCODE": "008916",
+          "SHORTNAME": "华夏中证浙江国资创新发展ETF联接A",
+          "FEMPDATE": "2020-09-29",
+          "LEMPDATE": "2020-12-08",
+          "PENAVGROWTH": 2.47
+        },
+        {
+          "FCODE": "008917",
+          "SHORTNAME": "华夏中证浙江国资创新发展ETF联接C",
+          "FEMPDATE": "2020-09-29",
+          "LEMPDATE": "2020-12-08",
+          "PENAVGROWTH": 2.41
+        },
+        {
+          "FCODE": "515760",
+          "SHORTNAME": "浙江国资ETF华夏",
+          "FEMPDATE": "2020-09-17",
+          "LEMPDATE": "2020-12-08",
+          "PENAVGROWTH": 5.02
+        },
+        {
+          "FCODE": "006910",
+          "SHORTNAME": "华夏战略新兴成指ETF联接C",
+          "FEMPDATE": "2020-03-18",
+          "LEMPDATE": "2020-12-08",
+          "PENAVGROWTH": 50.582
+        },
+        {
+          "FCODE": "512770",
+          "SHORTNAME": "战略新兴ETF华夏",
+          "FEMPDATE": "2020-03-18",
+          "LEMPDATE": "2020-12-08",
+          "PENAVGROWTH": 55.4921
+        },
+        {
+          "FCODE": "006909",
+          "SHORTNAME": "华夏战略新兴成指ETF联接A",
+          "FEMPDATE": "2020-03-18",
+          "LEMPDATE": "2020-12-08",
+          "PENAVGROWTH": 50.904
+        },
+        {
+          "FCODE": "007505",
+          "SHORTNAME": "华夏AH经济蓝筹股票A",
+          "FEMPDATE": "2019-07-16",
+          "LEMPDATE": "2020-12-08",
+          "PENAVGROWTH": 27.47
+        },
+        {
+          "FCODE": "007506",
+          "SHORTNAME": "华夏AH经济蓝筹股票C",
+          "FEMPDATE": "2019-07-16",
+          "LEMPDATE": "2020-12-08",
+          "PENAVGROWTH": 26.94
+        },
+        {
+          "FCODE": "159962",
+          "SHORTNAME": "华夏中证四川国改ETF",
+          "FEMPDATE": "2019-03-06",
+          "LEMPDATE": "2020-12-08",
+          "PENAVGROWTH": 45.23
+        },
+        {
+          "FCODE": "006561",
+          "SHORTNAME": "华夏四川国改ETF联接C",
+          "FEMPDATE": "2019-01-22",
+          "LEMPDATE": "2020-12-08",
+          "PENAVGROWTH": 30.15
+        },
+        {
+          "FCODE": "006560",
+          "SHORTNAME": "华夏四川国改ETF联接A",
+          "FEMPDATE": "2019-01-22",
+          "LEMPDATE": "2020-12-08",
+          "PENAVGROWTH": 30.89
+        },
+        {
+          "FCODE": "006196",
+          "SHORTNAME": "华夏中证央企ETF联接A",
+          "FEMPDATE": "2018-11-14",
+          "LEMPDATE": "2020-12-08",
+          "PENAVGROWTH": 18.04
+        },
+        {
+          "FCODE": "006197",
+          "SHORTNAME": "华夏中证央企ETF联接C",
+          "FEMPDATE": "2018-11-14",
+          "LEMPDATE": "2020-12-08",
+          "PENAVGROWTH": 17.31
+        },
+        {
+          "FCODE": "512950",
+          "SHORTNAME": "央企改革ETF华夏",
+          "FEMPDATE": "2018-10-19",
+          "LEMPDATE": "2020-12-08",
+          "PENAVGROWTH": 15.4385
+        }
+      ]
+    }
+  ],
+  "ErrCode": 0,
+  "ErrMsg": null,
+  "TotalCount": 2,
+  "Expansion": null
+}

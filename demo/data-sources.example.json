@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "label": "请替换为可信数据源",
+  "eastmoney": {
+    "fund": "",
+    "fundApi": "",
+    "fundMobile": "",
+    "fundSuggest": "",
+    "fundF10": "",
+    "data": "",
+    "push2": "",
+    "push2his": "",
+    "push2delay": ""
+  },
+  "sina": {
+    "finance": "",
+    "hq": "",
+    "stock": "",
+    "stock2": "",
+    "vip": ""
+  },
+  "tencent": {
+    "qt": "",
+    "ifzq": "",
+    "portal": ""
+  },
+  "yahoo": {
+    "query1": ""
+  },
+  "http": {
+    "userAgent": "FundDeskDesktop/1.0"
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "holdings": [
+    {"fund": {"code": "007339", "name": "易方达沪深300ETF联接C", "kind": "指数型", "initials": "YFD", "pinyin": "yifangda"}, "shares": 10000, "costPerShare": 1.5},
+    {"fund": {"code": "050025", "name": "博时标普500ETF联接A", "kind": "QDII", "initials": "BS", "pinyin": "boshi"}, "shares": 1234.5678, "costPerShare": 1.2345},
+    {"fund": {"code": "000198", "name": "天弘余额宝货币", "kind": "货币型", "initials": "TH", "pinyin": "tianhong"}, "shares": 5000},
+    {"fund": {"code": "162411", "name": "华宝油气", "kind": "QDII", "initials": "HB", "pinyin": "huabao"}, "shares": 1000, "costPerShare": 2},
+    {"fund": {"code": "008163", "name": "南方标普红利低波", "kind": "指数型", "initials": "NF", "pinyin": "nanfang"}, "shares": 0, "costPerShare": 1},
+    {"fund": {"code": "161725", "name": "招商中证白酒", "kind": "指数型", "initials": "ZS", "pinyin": "zhaoshang"}, "shares": 100, "costPerShare": 1},
+    {"fund": {"code": "519021", "name": "国泰金鼎价值", "kind": "混合型", "initials": "GT", "pinyin": "guotai"}, "shares": 100, "costPerShare": 1},
+    {"fund": {"code": "001856", "name": "易方达环保主题", "kind": "混合型", "initials": "YFD", "pinyin": "yifangda"}, "shares": 100, "costPerShare": 1},
+    {"fund": {"code": "006327", "name": "易方达中概互联", "kind": "QDII", "initials": "YFD", "pinyin": "yifangda"}, "shares": 100, "costPerShare": 1}
+  ],
+  "snapshots": {
+    "007339": {
+      "history": [
+        {"day": "2026-11-24", "value": 1.6, "rate": 0.5, "source": "天天基金"},
+        {"day": "2026-11-25", "value": 1.6161, "rate": 1.0063, "source": "天天基金"}
+      ],
+      "estimate": {"timestamp": 817350900, "marketDay": "2026-11-26", "baseDay": "2026-11-25", "value": 1.6008, "percent": -0.9442},
+      "estimateAvailable": true
+    },
+    "050025": {
+      "history": [
+        {"day": "2026-11-25", "value": 1.9935, "rate": 0.2, "source": "天天基金"},
+        {"day": "2026-11-26", "value": 1.9875, "rate": -0.3211, "source": "天天基金"}
+      ]
+    },
+    "000198": {
+      "history": [
+        {"day": "2026-11-25", "value": 1, "annualizedRate": 1.234, "source": "天天基金"}
+      ]
+    },
+    "162411": {
+      "history": [{"day": "2026-11-25", "value": 1.5, "rate": 0.1, "source": "天天基金"}],
+      "estimate": {"timestamp": 817350900, "marketDay": "2026-11-25", "baseDay": "2026-11-24", "value": 1.51, "percent": 0.6667}
+    },
+    "161725": {
+      "history": [{"day": "2026-11-25", "value": 1.2, "rate": -0.2, "source": "天天基金"}],
+      "estimate": {"timestamp": 817350900, "marketDay": "2026-11-26", "baseDay": "2026-11-24", "value": 1.21, "percent": 0.8333}
+    },
+    "519021": {
+      "history": [{"day": "2026-11-25", "value": 1.2, "rate": -0.2, "source": "天天基金"}],
+      "estimate": {"timestamp": 817347600, "marketDay": "2026-11-26", "baseDay": "2026-11-25", "value": 1.21, "percent": 0.8333}
+    },
+    "001856": {
+      "history": [
+        {"day": "2026-11-25", "value": 1.19, "rate": 0.1, "source": "天天基金"},
+        {"day": "2026-11-26", "value": 1.2, "source": "天天基金"}
+      ]
+    },
+    "006327": {
+      "history": [{"day": "2026-11-25", "value": 1.2, "rate": -0.2, "source": "天天基金"}],
+      "estimate": {"timestamp": 817350900, "marketDay": "2026-11-26", "baseDay": "2026-11-25", "value": 1.21, "percent": 0.8333},
+      "estimateAvailable": false
+    }
+  }
+}

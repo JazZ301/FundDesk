@@ -1,0 +1,168 @@
+{
+  "holdings": [
+    {
+      "fund": {
+        "code": "007339",
+        "name": "易方达沪深300ETF联接C",
+        "kind": "指数型-股票",
+        "initials": "YFDHS300ETFLJC",
+        "pinyin": "yifangdahushen300etflianjie"
+      },
+      "shares": 10000,
+      "costPerShare": 1.5,
+      "groups": ["macd"]
+    },
+    {
+      "fund": {
+        "code": "000198",
+        "name": "天弘余额宝货币",
+        "kind": "货币型",
+        "initials": "THYEB",
+        "pinyin": "tianhongyuebao"
+      }
+    },
+    {
+      "fund": {
+        "code": "050025",
+        "name": "博时标普500ETF联接A",
+        "kind": "QDII",
+        "initials": "BSSP500ETFLJA",
+        "pinyin": "boshibiaopu500etflianjie"
+      },
+      "shares": 1234.5678,
+      "costPerShare": 1.2345,
+      "groups": ["red"]
+    }
+  ],
+  "snapshots": {
+    "007339": {
+      "history": [
+        {
+          "day": "2026-11-24",
+          "value": 1.6,
+          "rate": 0.5,
+          "source": "天天基金"
+        },
+        {
+          "day": "2026-11-25",
+          "value": 1.6161,
+          "rate": 1.0063,
+          "cumulativeValue": 1.6161,
+          "source": "天天基金"
+        }
+      ],
+      "estimate": {
+        "timestamp": 817373040,
+        "marketDay": "2026-11-26",
+        "baseDay": "2026-11-25",
+        "value": 1.6008,
+        "percent": -0.9442
+      },
+      "navCheckedAt": 817384061.185708,
+      "estimateCheckedAt": 817373759.926908,
+      "estimateAvailable": true
+    },
+    "000198": {
+      "history": [
+        {
+          "day": "2026-11-25",
+          "value": 1,
+          "annualizedRate": 1.234,
+          "source": "天天基金"
+        }
+      ]
+    },
+    "050025": {
+      "history": [
+        {
+          "day": "2026-11-24",
+          "value": 1.9875,
+          "rate": -0.3211,
+          "source": "天天基金"
+        }
+      ],
+      "estimateAvailable": false
+    }
+  },
+  "observations": {
+    "007339": {
+      "updatedDay": "2026-11-25",
+      "source": "macd/基金_MACD战法适配度.html",
+      "metrics": [
+        {
+          "key": "score",
+          "label": "适配度",
+          "value": "82",
+          "note": "近 600 日"
+        }
+      ],
+      "series": [
+        {
+          "day": "2026-11-24",
+          "value": 3.2145
+        },
+        {
+          "day": "2026-11-25",
+          "value": 3.1987
+        }
+      ],
+      "macd": {
+        "score": 82,
+        "grade": "A",
+        "recommendation": "适合波段",
+        "fee8": 0.1,
+        "reasons": ["DIF 上穿 DEA", "红柱放大"]
+      }
+    },
+    "050025": {
+      "updatedDay": "2026-11-25",
+      "source": "red/.cache.json",
+      "metrics": [],
+      "valuation": {
+        "total": 3,
+        "maximum": 4,
+        "level": "中性",
+        "advice": "保持观察",
+        "anchors": [
+          {
+            "key": "pe",
+            "name": "市盈率",
+            "value": "18.2",
+            "score": 2,
+            "label": "中性",
+            "rule": "十年分位 46%"
+          }
+        ],
+        "oneYearPercentile": 46.2,
+        "relativeLabel": "持平",
+        "relativeAdvice": "与沪深300同步"
+      }
+    }
+  },
+  "journals": {
+    "007339": [
+      {
+        "id": "0F0E0D0C-0B0A-4908-8706-050403020100",
+        "action": "申购 / 加仓",
+        "day": "2026-11-20",
+        "shares": 10000,
+        "price": 1.5,
+        "fee": 0,
+        "cash": 15000
+      },
+      {
+        "id": "1F1E1D1C-1B1A-4918-8716-151413121110",
+        "action": "现金分红",
+        "day": "2026-11-21",
+        "fee": 0,
+        "cash": 12.34,
+        "realized": 12.34
+      }
+    ]
+  },
+  "refreshInterval": 10,
+  "appearanceTheme": "system",
+  "fundColumnOrder": ["name", "estimateRate", "dayProfit", "value", "profit", "profitRate", "code"],
+  "hiddenFundColumnIDs": ["estimateTime"],
+  "fundDetailTabOrder": ["estimate", "history", "returns", "holdings", "profile"]
+}

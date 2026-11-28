@@ -1,0 +1,409 @@
+{
+  "clock" : [
+    {
+      "canPoll" : false,
+      "day" : "2026-11-26",
+      "instant" : "2026-11-25T16:30:00Z"
+    },
+    {
+      "canPoll" : true,
+      "day" : "2026-11-26",
+      "instant" : "2026-11-26T01:30:00Z"
+    },
+    {
+      "canPoll" : false,
+      "day" : "2026-11-26",
+      "instant" : "2026-11-26T08:16:00Z"
+    },
+    {
+      "canPoll" : false,
+      "day" : "2026-11-28",
+      "instant" : "2026-11-28T02:00:00Z"
+    }
+  ],
+  "csv" : {
+    "exported" : "﻿\"基金代码\",\"基金名称\",\"基金类型\",\"持有份额\",\"单位成本\",\"所属分类\"\r\n\"007339\",\"易方达, \"\"沪深300\"\"\",\"指数型\",\"10000\",\"1.5\",\"全部自选|我的持仓|MACD 观察\"\r\n\"050025\",\"'=博时标普\",\"QDII\",\"0\",\"\",\"全部自选|红利观察\"\r\n",
+    "exportedHex" : "efbbbf22e59fbae98791e4bba3e7a081222c22e59fbae98791e5908de7a7b0222c22e59fbae98791e7b1bbe59e8b222c22e68c81e69c89e4bbbde9a29d222c22e58d95e4bd8de68890e69cac222c22e68980e5b19ee58886e7b1bb220d0a22303037333339222c22e69893e696b9e8bebe2c202222e6b2aae6b7b13330302222222c22e68c87e695b0e59e8b222c223130303030222c22312e35222c22e585a8e983a8e887aae980897ce68891e79a84e68c81e4bb937c4d41434420e8a782e5af9f220d0a22303530303235222c22273de58d9ae697b6e6a087e699ae222c2251444949222c2230222c22222c22e585a8e983a8e887aae980897ce7baa2e588a9e8a782e5af9f220d0a",
+    "invalid" : 0,
+    "parsed" : [
+      {
+        "code" : "007339",
+        "cost" : "1.5",
+        "groups" : [
+          "macd"
+        ],
+        "kind" : "目录类型",
+        "name" : "目录名称",
+        "shares" : "10000"
+      },
+      {
+        "code" : "050025",
+        "cost" : null,
+        "groups" : [
+          "red"
+        ],
+        "kind" : "QDII",
+        "name" : "'=博时标普",
+        "shares" : "0"
+      }
+    ]
+  },
+  "freshness" : [
+    {
+      "expected" : true,
+      "marketDay" : "2026-11-26",
+      "now" : "2026-11-26T02:00:00Z",
+      "timestamp" : "2026-11-26T01:55:00Z"
+    },
+    {
+      "expected" : false,
+      "marketDay" : "2026-11-26",
+      "now" : "2026-11-26T02:00:00Z",
+      "timestamp" : "2026-11-26T01:30:00Z"
+    },
+    {
+      "expected" : true,
+      "marketDay" : "2026-11-26",
+      "now" : "2026-11-26T04:10:00Z",
+      "timestamp" : "2026-11-26T01:30:00Z"
+    },
+    {
+      "expected" : false,
+      "marketDay" : "2026-11-25",
+      "now" : "2026-11-26T02:00:00Z",
+      "timestamp" : "2026-11-26T01:55:00Z"
+    },
+    {
+      "expected" : true,
+      "marketDay" : "2026-11-26",
+      "now" : "2026-11-26T02:00:00Z",
+      "timestamp" : "2026-11-26T02:01:00Z"
+    },
+    {
+      "expected" : false,
+      "marketDay" : "2026-11-26",
+      "now" : "2026-11-26T02:00:00Z",
+      "timestamp" : "2026-11-26T02:03:00Z"
+    }
+  ],
+  "futures" : [
+    {
+      "indices" : [
+        0,
+        6,
+        12,
+        18,
+        24,
+        30,
+        36
+      ],
+      "label" : "day"
+    },
+    {
+      "indices" : [
+        0,
+        48,
+        96,
+        144,
+        192,
+        240,
+        276
+      ],
+      "label" : "night"
+    }
+  ],
+  "journal" : {
+    "base" : {
+      "cost" : null,
+      "shares" : "0"
+    },
+    "replayed" : {
+      "cost" : "1.40033333333333333333333333333333333333",
+      "shares" : "12000"
+    },
+    "steps" : [
+      {
+        "action" : "申购 \/ 加仓",
+        "cash" : "-15000",
+        "cost" : "1.5",
+        "fee" : "0",
+        "realized" : null,
+        "shares" : "10000"
+      },
+      {
+        "action" : "申购 \/ 加仓",
+        "cash" : "-6005",
+        "cost" : "1.40033333333333333333333333333333333333",
+        "fee" : "5",
+        "realized" : null,
+        "shares" : "15000"
+      },
+      {
+        "action" : "赎回 \/ 减仓",
+        "cash" : "5398",
+        "cost" : "1.40033333333333333333333333333333333333",
+        "fee" : "2",
+        "realized" : "1197.0000000000000000000000000000000001",
+        "shares" : "12000"
+      },
+      {
+        "action" : "现金分红",
+        "cash" : "12.34",
+        "cost" : "1.40033333333333333333333333333333333333",
+        "fee" : "0",
+        "realized" : "12.34",
+        "shares" : "12000"
+      }
+    ]
+  },
+  "metrics" : {
+    "health" : {
+      "failed" : 1,
+      "fresh" : 2,
+      "missing" : 2,
+      "stale" : 3
+    },
+    "holdings" : [
+      {
+        "code" : "007339",
+        "estimated" : "-153",
+        "exclusion" : null,
+        "profit" : "1161",
+        "published" : null,
+        "rate" : "7.74",
+        "value" : "16161"
+      },
+      {
+        "code" : "050025",
+        "estimated" : null,
+        "exclusion" : null,
+        "profit" : "929.6295534",
+        "published" : "-7.9026271297623",
+        "rate" : "60.99635479951397326852976913730255164",
+        "value" : "2453.7035025"
+      },
+      {
+        "code" : "000198",
+        "estimated" : null,
+        "exclusion" : "货币基金",
+        "profit" : null,
+        "published" : null,
+        "rate" : null,
+        "value" : "5000"
+      },
+      {
+        "code" : "162411",
+        "estimated" : null,
+        "exclusion" : "估值归属其他交易日",
+        "profit" : "-500",
+        "published" : null,
+        "rate" : "-25",
+        "value" : "1500"
+      },
+      {
+        "code" : "008163",
+        "estimated" : null,
+        "exclusion" : null,
+        "profit" : null,
+        "published" : null,
+        "rate" : null,
+        "value" : null
+      },
+      {
+        "code" : "161725",
+        "estimated" : null,
+        "exclusion" : "估值基准日与正式净值日不一致",
+        "profit" : "20",
+        "published" : null,
+        "rate" : "20",
+        "value" : "120"
+      },
+      {
+        "code" : "519021",
+        "estimated" : null,
+        "exclusion" : "估值时间超出有效范围",
+        "profit" : "20",
+        "published" : null,
+        "rate" : "20",
+        "value" : "120"
+      },
+      {
+        "code" : "001856",
+        "estimated" : null,
+        "exclusion" : "已披露，缺少涨跌幅或前一净值",
+        "profit" : "20",
+        "published" : null,
+        "rate" : "20",
+        "value" : "120"
+      },
+      {
+        "code" : "006327",
+        "estimated" : null,
+        "exclusion" : "暂无可用估值",
+        "profit" : "20",
+        "published" : null,
+        "rate" : "20",
+        "value" : "120"
+      }
+    ],
+    "now" : "2026-11-26T02:00:00Z",
+    "portfolio" : {
+      "coverage" : "63.14196997211337396698955958143",
+      "dayProfit" : "-160.9026271297623",
+      "estimated" : "-153",
+      "estimatedCount" : 1,
+      "exclusions" : {
+        "估值基准日与正式净值日不一致" : 1,
+        "估值归属其他交易日" : 1,
+        "估值时间超出有效范围" : 1,
+        "已披露，缺少涨跌幅或前一净值" : 1,
+        "暂无可用估值" : 1,
+        "货币基金" : 1
+      },
+      "holdingCount" : 8,
+      "missingValuationCount" : 0,
+      "profit" : "1670.6295534",
+      "published" : "-7.9026271297623",
+      "publishedCount" : 1,
+      "value" : "25594.7035025"
+    }
+  },
+  "observation" : {
+    "rebound" : {
+      "bands" : {
+        "boxHigh" : 1.5,
+        "boxLow" : 1.2040000000000002,
+        "count" : 80,
+        "last" : {
+          "day" : "2026-11-19",
+          "lower" : 1.1903613054160365,
+          "movingAverage" : 1.3079999999999998,
+          "nav" : 1.304,
+          "percentile" : 50,
+          "upper" : 1.2896386945839631
+        }
+      },
+      "macd" : {
+        "bullish" : true,
+        "count" : 80,
+        "last" : [
+          {
+            "crossing" : 0,
+            "day" : "2026-11-17",
+            "dea" : -0.024745855949368265,
+            "dif" : -0.018047223784202648,
+            "histogram" : 0.013397264330331234,
+            "nav" : 1.264
+          },
+          {
+            "crossing" : 0,
+            "day" : "2026-11-18",
+            "dea" : -0.022340547720751162,
+            "dif" : -0.012719314806282744,
+            "histogram" : 0.019242465828936836,
+            "nav" : 1.284
+          },
+          {
+            "crossing" : 0,
+            "day" : "2026-11-19",
+            "dea" : -0.019233365395320095,
+            "dif" : -0.0068046360935958283,
+            "histogram" : 0.024857458603448533,
+            "nav" : 1.304
+          }
+        ],
+        "signal" : "红柱第 5 日 · 持有"
+      }
+    },
+    "smooth" : {
+      "bands" : {
+        "boxHigh" : 1.155,
+        "boxLow" : 0.93299199999999993,
+        "count" : 80,
+        "last" : {
+          "day" : "2026-11-19",
+          "lower" : 0.92694529238762358,
+          "movingAverage" : 1.0344246166666666,
+          "nav" : 0.98317999999999994,
+          "percentile" : 50,
+          "upper" : 1.1450953076123767
+        }
+      },
+      "macd" : {
+        "bullish" : false,
+        "count" : 80,
+        "last" : [
+          {
+            "crossing" : 0,
+            "day" : "2026-11-17",
+            "dea" : -0.017577409253188084,
+            "dif" : -0.028861458177609434,
+            "histogram" : -0.0225680978488427,
+            "nav" : 0.9770009999999999
+          },
+          {
+            "crossing" : 0,
+            "day" : "2026-11-18",
+            "dea" : -0.019903096979122747,
+            "dif" : -0.029205847882861402,
+            "histogram" : -0.018605501807477311,
+            "nav" : 0.97908299999999993
+          },
+          {
+            "crossing" : 0,
+            "day" : "2026-11-19",
+            "dea" : -0.021685680081473278,
+            "dif" : -0.028816012490875398,
+            "histogram" : -0.014260664818804239,
+            "nav" : 0.98317999999999994
+          }
+        ],
+        "signal" : "绿柱第 19 日 · 空仓"
+      }
+    }
+  },
+  "search" : [
+    {
+      "codes" : [
+        "007339"
+      ],
+      "keyword" : "0073"
+    },
+    {
+      "codes" : [
+        "007339"
+      ],
+      "keyword" : "沪深"
+    },
+    {
+      "codes" : [
+        "007339"
+      ],
+      "keyword" : "yfd"
+    },
+    {
+      "codes" : [
+        "050025"
+      ],
+      "keyword" : "boshi"
+    },
+    {
+      "codes" : [
+        "050025"
+      ],
+      "keyword" : "050025"
+    },
+    {
+      "codes" : [
+        "161725"
+      ],
+      "keyword" : "白酒"
+    },
+    {
+      "codes" : [
+
+      ],
+      "keyword" : "不存在"
+    }
+  ]
+}
