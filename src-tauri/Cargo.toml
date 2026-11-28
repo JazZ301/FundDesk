@@ -1,6 +1,6 @@
 [package]
 name = "funddesk"
-version = "1.0.0"
+version = "1.0.1"
 description = "FundDesk（基金看板）"
 edition = "2021"
 license = "MIT"
