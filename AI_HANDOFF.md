@@ -1,5 +1,16 @@
 # FundDesk（基金看板）交接
 
+## v1.0.3 交接摘要
+
+- 当前功能：安装包内置默认数据源（资源文件 `src-tauri/resources/data-sources.json`，不写死在代码里），设置页可「恢复内置默认」；移除「持仓流水」，只维护当前份额和单位成本；新增「支持开发」赞赏码；修复设置类弹窗标题栏布局。对外说明见 `release-notes/v1.0.3.md`。
+- `v1.0.3` 标签指向 `175e228`。工作区内核测试（含旧版 `journals` 兼容）和前端生产构建通过。
+- GitHub Actions [发布运行](https://github.com/JazZ301/FundDesk/actions/runs/46149512677) 全部成功，`v1.0.3` 已作为 Latest Release 公开，共 9 个资产；`latest.json`、`latest-cn.json`、`latest-cn-v1.0.1.json` 均声明 `1.0.3`，旧客户端兼容清单继续发布。
+- 下载 9 个资产并按 `SHA256SUMS.txt` 校验全部通过。DMG `4df9031b7a48630f1d4ca95e744914c43d087894c7d6d92533a8915aec1b4ae3`，updater 归档 `e457b6f9b9c36eae7a18d18f95b46dc21b8c949baf25dd82e8de5578096edaab`，Windows 安装包 `f8fd1640da0b73959ed0ed37e1569b1e5210d3886e8ea6f4ee1ea9333687d866`。
+- CI 产出的 macOS App 为 ad-hoc 签名，未公证，`spctl` 会拒绝；`codesign --verify` 通过。Windows 安装包本轮未带 Authenticode 签名，仅上传了 updater `.sig`。
+- 已将官方 DMG 安装到 `/Applications/基金看板.app`，重启后「关于」显示 `1.0.3`，检查更新返回「已是最新版本。」；实机确认「支持开发」两张二维码尺寸、对齐一致。被替换的本地构建版本保存在 `~/Library/Application Support/FundDeskDesktop/app-backup.20261128-213601/基金看板.app`。
+- 风险：内置数据源为公开第三方接口，可能随时调整或限流；如失效可通过「恢复内置默认」或替换本机 `data-sources.json` 更新。
+
+
 ## v1.0.2 交接摘要
 
 - 当前功能包括看板休市与估值过期提示、批量持仓导入、基金行右键分组、基金详情标签排序、本地持仓精度说明和数据源配置获取提示。对外说明见 `release-notes/v1.0.2.md`。
