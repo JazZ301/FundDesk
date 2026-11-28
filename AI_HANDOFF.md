@@ -7,7 +7,10 @@
 - 休市提示覆盖周末和 2026 年 A 股节假日。后续年份需补充节假日日历。现有轮询按星期和时段判断，工作日节假日仍可能请求盘中估值。
 - 发布由 tag 触发。新版使用固定的 `latest-cn.json`，同时发布旧客户端使用的 `latest-cn-v1.0.1.json` 兼容清单和 GitHub 官方 `latest.json`。
 - `v1.0.2` 标签指向 `17acac1`。工作区测试、前端生产构建、本地 macOS 双架构 DMG 校验及 updater 归档版本检查通过。
-- GitHub Actions [首次发布运行](https://github.com/JazZ301/FundDesk/actions/runs/46132833693) 中，内核测试通过，两个打包任务失败。macOS 日志显示 updater 签名秘密无法解码（`Missing encoded key in secret key`）。恢复仓库的现有签名 Secret 后，重跑同一运行的所有任务，再校验公开资产。验证时保留旧客户端用于真实升级测试。
+- GitHub Actions [发布运行](https://github.com/JazZ301/FundDesk/actions/runs/46132833693) 第 2 次尝试全部成功：内核测试、macOS 双架构、Windows x64 和发布任务均通过。首次失败原因是仓库 updater 签名 Secret 内容无效，已恢复为与签名公钥匹配的私钥。
+- `v1.0.2` 已作为 Latest Release 公开，共 9 个资产。公开安装包、签名、三个更新清单和 SHA-256 校验通过；macOS updater 归档及两端签名均声明 `1.0.2`。
+- 已从安装版 `1.0.1` 通过应用内检查更新下载并安装 `1.0.2`，重启后「关于」显示 `1.0.2`，再次检查更新返回「已是最新版本」。
+- macOS 安装包使用 ad-hoc 签名，未公证。Windows 包已由 CI 构建并上传签名，但本轮未在 Windows 实机执行安装升级验收。
 
 
 ## 2026-11-28 看板估值休市提示
