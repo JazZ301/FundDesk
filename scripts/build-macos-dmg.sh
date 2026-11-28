@@ -6,7 +6,7 @@ cd "$ROOT"
 
 TARGET="universal-apple-darwin"
 APP="$ROOT/target/$TARGET/release/bundle/macos/基金看板.app"
-DMG="$ROOT/release/基金看板_1.0.0_universal.dmg"
+DMG="$ROOT/release/FundDesk-1.0.0-macOS-universal.dmg"
 STAGING="$ROOT/target/dmg-staging"
 IDENTITY=${APPLE_SIGNING_IDENTITY:--}
 
